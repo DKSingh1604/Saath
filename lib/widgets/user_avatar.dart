@@ -19,22 +19,22 @@ class UserAvatar extends StatelessWidget {
       children: [
         CircleAvatar(
           radius: radius,
-          backgroundImage: user.photoUrl != null 
-              ? NetworkImage(user.photoUrl!) 
+          backgroundImage: user.profilePicture != null
+              ? NetworkImage(user.profilePicture!)
               : null,
           backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-          child: user.photoUrl == null 
+          child: user.profilePicture == null
               ? Text(
                   user.name[0].toUpperCase(),
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onPrimaryContainer,
-                    fontSize: radius * 0.6,
-                    fontWeight: FontWeight.w600,
-                  ),
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                        fontSize: radius * 0.6,
+                        fontWeight: FontWeight.w600,
+                      ),
                 )
               : null,
         ),
-        if (showVerificationBadge && user.isVerified)
+        if (showVerificationBadge && user.isVerified.isBasicVerified)
           Positioned(
             right: 0,
             bottom: 0,

@@ -24,17 +24,18 @@ class RideCard extends StatelessWidget {
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: InkWell(
-        onTap: onTap ?? () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => RideDetailsScreen(
-                ride: ride,
-                driver: driver,
-              ),
-            ),
-          );
-        },
+        onTap: onTap ??
+            () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => RideDetailsScreen(
+                    ride: ride,
+                    driver: driver,
+                  ),
+                ),
+              );
+            },
         borderRadius: BorderRadius.circular(16),
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -52,23 +53,30 @@ class RideCard extends StatelessWidget {
                       children: [
                         Text(
                           driver.name,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style:
+                              Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
                         ),
                         Row(
                           children: [
                             RatingDisplay(
-                              rating: driver.rating,
-                              totalRatings: driver.totalRides,
+                              rating: driver.rating.average,
+                              totalRatings: driver.totalRides.total,
                               size: 14,
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              '• ${driver.totalRides} rides',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                              ),
+                              '• ${driver.totalRides.total} rides',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface
+                                        .withValues(alpha: 0.6),
+                                  ),
                             ),
                           ],
                         ),
@@ -77,7 +85,8 @@ class RideCard extends StatelessWidget {
                   ),
                   // Price Tag
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.primary,
                       borderRadius: BorderRadius.circular(20),
@@ -85,15 +94,15 @@ class RideCard extends StatelessWidget {
                     child: Text(
                       '\$${ride.contributionAmount.toInt()}',
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onPrimary,
-                        fontWeight: FontWeight.w600,
-                      ),
+                            color: Theme.of(context).colorScheme.onPrimary,
+                            fontWeight: FontWeight.w600,
+                          ),
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 16),
-              
+
               // Route Information
               Row(
                 children: [
@@ -110,7 +119,10 @@ class RideCard extends StatelessWidget {
                       Container(
                         width: 2,
                         height: 20,
-                        color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
+                        color: Theme.of(context)
+                            .colorScheme
+                            .outline
+                            .withValues(alpha: 0.3),
                       ),
                       Container(
                         width: 12,
@@ -129,18 +141,20 @@ class RideCard extends StatelessWidget {
                       children: [
                         Text(
                           ride.fromLocation,
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.w500,
-                          ),
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    fontWeight: FontWeight.w500,
+                                  ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 16),
                         Text(
                           ride.toLocation,
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.w500,
-                          ),
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    fontWeight: FontWeight.w500,
+                                  ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -150,45 +164,61 @@ class RideCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 16),
-              
+
               // Time and Seats Info
               Row(
                 children: [
                   Icon(
                     Icons.schedule,
                     size: 16,
-                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.6),
                   ),
                   const SizedBox(width: 4),
                   Text(
                     ride.dateTimeDisplay,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                    ),
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withValues(alpha: 0.6),
+                        ),
                   ),
                   const Spacer(),
                   Icon(
                     Icons.person,
                     size: 16,
-                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.6),
                   ),
                   const SizedBox(width: 4),
                   Text(
                     '${ride.availableSeats} seats left',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                    ),
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withValues(alpha: 0.6),
+                        ),
                   ),
                 ],
               ),
-              
+
               // Vehicle Info (if available)
               if (driver.vehicle != null) ...[
                 const SizedBox(height: 12),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .surfaceContainerHighest
+                        .withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
@@ -197,14 +227,20 @@ class RideCard extends StatelessWidget {
                       Icon(
                         Icons.directions_car,
                         size: 14,
-                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withValues(alpha: 0.7),
                       ),
                       const SizedBox(width: 4),
                       Text(
                         '${driver.vehicle!.displayName} • ${driver.vehicle!.color}',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-                        ),
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurface
+                                  .withValues(alpha: 0.7),
+                            ),
                       ),
                     ],
                   ),

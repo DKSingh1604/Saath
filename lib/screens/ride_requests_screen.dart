@@ -33,7 +33,10 @@ class _RideRequestsScreenState extends State<RideRequestsScreen> {
             margin: const EdgeInsets.all(20),
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
+              color: Theme.of(context)
+                  .colorScheme
+                  .primaryContainer
+                  .withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Column(
@@ -42,8 +45,8 @@ class _RideRequestsScreenState extends State<RideRequestsScreen> {
                 Text(
                   'Your Ride',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                        fontWeight: FontWeight.w600,
+                      ),
                 ),
                 const SizedBox(height: 12),
                 Row(
@@ -59,7 +62,10 @@ class _RideRequestsScreenState extends State<RideRequestsScreen> {
                     Icon(
                       Icons.arrow_forward,
                       size: 16,
-                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.5),
                     ),
                     const SizedBox(width: 16),
                     Icon(
@@ -75,8 +81,11 @@ class _RideRequestsScreenState extends State<RideRequestsScreen> {
                 Text(
                   widget.ride.dateTimeDisplay,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-                  ),
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withValues(alpha: 0.7),
+                      ),
                 ),
               ],
             ),
@@ -89,10 +98,11 @@ class _RideRequestsScreenState extends State<RideRequestsScreen> {
               itemCount: widget.requests.length,
               itemBuilder: (context, index) {
                 final request = widget.requests[index];
-                
+
                 // Mock passenger data - in real app this would come from API
-                final passenger = SampleData.drivers[index % SampleData.drivers.length];
-                
+                final passenger =
+                    SampleData.drivers[index % SampleData.drivers.length];
+
                 return Card(
                   margin: const EdgeInsets.only(bottom: 16),
                   child: Padding(
@@ -113,9 +123,12 @@ class _RideRequestsScreenState extends State<RideRequestsScreen> {
                                 children: [
                                   Text(
                                     passenger.name,
-                                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                      fontWeight: FontWeight.w600,
-                                    ),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleMedium
+                                        ?.copyWith(
+                                          fontWeight: FontWeight.w600,
+                                        ),
                                   ),
                                   const SizedBox(height: 2),
                                   Row(
@@ -127,10 +140,16 @@ class _RideRequestsScreenState extends State<RideRequestsScreen> {
                                       ),
                                       const SizedBox(width: 4),
                                       Text(
-                                        '${passenger.rating} • ${passenger.totalRides} rides',
-                                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-                                        ),
+                                        '${passenger.rating.average.toStringAsFixed(1)} • ${passenger.totalRides.total} rides',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall
+                                            ?.copyWith(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .onSurface
+                                                  .withValues(alpha: 0.7),
+                                            ),
                                       ),
                                     ],
                                   ),
@@ -138,27 +157,35 @@ class _RideRequestsScreenState extends State<RideRequestsScreen> {
                               ),
                             ),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 6),
                               decoration: BoxDecoration(
                                 color: Theme.of(context).colorScheme.tertiary,
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Text(
                                 '\$${request.offeredAmount.toInt()}',
-                                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                  color: Theme.of(context).colorScheme.onTertiary,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleSmall
+                                    ?.copyWith(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onTertiary,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                               ),
                             ),
                           ],
                         ),
                         const SizedBox(height: 16),
-                        
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.secondaryContainer.withValues(alpha: 0.3),
+                            color: Theme.of(context)
+                                .colorScheme
+                                .secondaryContainer
+                                .withValues(alpha: 0.3),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Row(
@@ -172,17 +199,18 @@ class _RideRequestsScreenState extends State<RideRequestsScreen> {
                               Expanded(
                                 child: Text(
                                   'Pickup: ${request.pickupPoint}',
-                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    fontWeight: FontWeight.w500,
-                                  ),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.w500,
+                                      ),
                                 ),
                               ),
                             ],
                           ),
                         ),
-                        
                         const SizedBox(height: 16),
-                        
                         Row(
                           children: [
                             Expanded(
@@ -191,8 +219,11 @@ class _RideRequestsScreenState extends State<RideRequestsScreen> {
                                 icon: const Icon(Icons.close),
                                 label: const Text('Decline'),
                                 style: OutlinedButton.styleFrom(
-                                  foregroundColor: Theme.of(context).colorScheme.error,
-                                  side: BorderSide(color: Theme.of(context).colorScheme.error),
+                                  foregroundColor:
+                                      Theme.of(context).colorScheme.error,
+                                  side: BorderSide(
+                                      color:
+                                          Theme.of(context).colorScheme.error),
                                 ),
                               ),
                             ),

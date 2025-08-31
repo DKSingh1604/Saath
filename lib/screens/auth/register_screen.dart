@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:car_pool_app/services/auth_service.dart';
 import 'package:car_pool_app/screens/auth/login_screen.dart';
 import 'package:car_pool_app/screens/auth/email_verification_screen.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
+import 'dart:io';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -10,7 +13,8 @@ class RegisterScreen extends StatefulWidget {
   State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStateMixin {
+class _RegisterScreenState extends State<RegisterScreen>
+    with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
@@ -18,7 +22,17 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final _cityController = TextEditingController();
-  
+
+  // New fields
+  File? _profileImage;
+  DateTime? _selectedDateOfBirth;
+  String _selectedGender = 'prefer_not_to_say';
+  bool _isDriver = false;
+  bool _smokingAllowed = false;
+  bool _petsAllowed = false;
+  String _musicPreference = 'any';
+  String _conversationLevel = 'some_chat';
+
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
@@ -29,12 +43,12 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
   @override
   void initState() {
     super.initState();
-    
+
     _slideController = AnimationController(
       duration: const Duration(milliseconds: 600),
       vsync: this,
     );
-    
+
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, 0.1),
       end: Offset.zero,
@@ -42,7 +56,7 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
       parent: _slideController,
       curve: Curves.easeOutCubic,
     ));
-    
+
     _slideController.forward();
   }
 
@@ -58,9 +72,123 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
     super.dispose();
   }
 
+  // Profile image selection methods
+  Future<void> _pickProfileImage() async {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Select Profile Picture',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildImageSourceOption(
+                  icon: Icons.camera_alt,
+                  label: 'Camera',
+                  onTap: () => _selectImage(ImageSource.camera),
+                ),
+                _buildImageSourceOption(
+                  icon: Icons.photo_library,
+                  label: 'Gallery',
+                  onTap: () => _selectImage(ImageSource.gallery),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildImageSourceOption({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, size: 40, color: Theme.of(context).colorScheme.primary),
+            const SizedBox(height: 8),
+            Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _selectImage(ImageSource source) async {
+    Navigator.pop(context); // Close bottom sheet
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(
+      source: source,
+      maxWidth: 1024,
+      maxHeight: 1024,
+      imageQuality: 85,
+    );
+
+    if (pickedFile != null) {
+      setState(() {
+        _profileImage = File(pickedFile.path);
+      });
+    }
+  }
+
+  // Date picker method
+  Future<void> _selectDateOfBirth() async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate:
+          DateTime.now().subtract(const Duration(days: 6570)), // 18 years ago
+      firstDate: DateTime(1900),
+      lastDate:
+          DateTime.now().subtract(const Duration(days: 4380)), // 12 years ago
+      helpText: 'Select Date of Birth',
+    );
+
+    if (picked != null && picked != _selectedDateOfBirth) {
+      setState(() {
+        _selectedDateOfBirth = picked;
+      });
+    }
+  }
+
   Future<void> _register() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
+    // Validate required fields
+    if (_selectedDateOfBirth == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Please select your date of birth'),
+          backgroundColor: Theme.of(context).colorScheme.error,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      );
+      return;
+    }
+
     if (!_acceptedTerms) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -74,35 +202,60 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
       );
       return;
     }
-    
+
     setState(() => _isLoading = true);
-    
-    final result = await AuthService.register(
-      name: _nameController.text.trim(),
-      email: _emailController.text.trim(),
-      phone: _phoneController.text.trim(),
-      password: _passwordController.text,
-      city: _cityController.text.trim(),
-    );
-    
-    setState(() => _isLoading = false);
-    
-    if (result['success']) {
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => EmailVerificationScreen(
-              email: _emailController.text.trim(),
+
+    try {
+      final result = await AuthService.register(
+        name: _nameController.text.trim(),
+        email: _emailController.text.trim(),
+        phone: _phoneController.text.trim(),
+        password: _passwordController.text,
+        city: _cityController.text.trim(),
+        dateOfBirth: _selectedDateOfBirth!,
+        gender: _selectedGender,
+        isDriver: _isDriver,
+        profileImage: _profileImage, // We'll handle this later in backend
+        preferences: {
+          'smokingAllowed': _smokingAllowed,
+          'petsAllowed': _petsAllowed,
+          'musicPreference': _musicPreference,
+          'conversationLevel': _conversationLevel,
+        },
+      );
+
+      if (result['success']) {
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => EmailVerificationScreen(
+                email: _emailController.text.trim(),
+              ),
             ),
-          ),
-        );
+          );
+        }
+      } else {
+        if (mounted) {
+          print(result['message'] ?? 'Registration failed');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result['message'] ?? 'Registration failed'),
+              backgroundColor: Theme.of(context).colorScheme.error,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          );
+        }
       }
-    } else {
+    } catch (error) {
       if (mounted) {
+        print("Error caught: " + error.toString());
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(result['message']),
+            content: Text('An error occurred: ${error.toString()}'),
             backgroundColor: Theme.of(context).colorScheme.error,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
@@ -111,13 +264,18 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
           ),
         );
       }
+    } finally {
+      // Always reset loading state
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -154,9 +312,9 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
                         ),
                       ),
                     ),
-                    
+
                     const SizedBox(height: 24),
-                    
+
                     // Welcome Text
                     Text(
                       'Join CommuteTogether! 🎉',
@@ -169,12 +327,18 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
                     Text(
                       'Create your account to start sharing rides',
                       style: theme.textTheme.bodyLarge?.copyWith(
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                        color:
+                            theme.colorScheme.onSurface.withValues(alpha: 0.7),
                       ),
                     ),
-                    
+
                     const SizedBox(height: 32),
-                    
+
+                    // Profile Picture Section
+                    _buildProfilePictureSection(),
+
+                    const SizedBox(height: 20),
+
                     // Name Field
                     _buildTextField(
                       controller: _nameController,
@@ -191,9 +355,9 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
                         return null;
                       },
                     ),
-                    
+
                     const SizedBox(height: 20),
-                    
+
                     // Email Field
                     _buildTextField(
                       controller: _emailController,
@@ -204,15 +368,18 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
                         if (value == null || value.isEmpty) {
                           return 'Please enter your email';
                         }
-                        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}\$').hasMatch(value)) {
+
+                        if (!RegExp(
+                                r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
+                            .hasMatch(value)) {
                           return 'Please enter a valid email';
                         }
                         return null;
                       },
                     ),
-                    
+
                     const SizedBox(height: 20),
-                    
+
                     // Phone Field
                     _buildTextField(
                       controller: _phoneController,
@@ -229,9 +396,9 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
                         return null;
                       },
                     ),
-                    
+
                     const SizedBox(height: 20),
-                    
+
                     // City Field
                     _buildTextField(
                       controller: _cityController,
@@ -245,9 +412,30 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
                         return null;
                       },
                     ),
-                    
+
                     const SizedBox(height: 20),
-                    
+
+                    // Date of Birth Field
+                    _buildDateOfBirthField(),
+
+                    const SizedBox(height: 20),
+
+                    // Gender Field
+                    _buildGenderField(),
+
+                    const SizedBox(height: 20),
+
+                    // Driver Toggle
+                    _buildDriverToggle(),
+
+                    const SizedBox(height: 20),
+
+                    // Preferences Section (only show if user is a driver)
+                    if (_isDriver) ...[
+                      _buildPreferencesSection(),
+                      const SizedBox(height: 20),
+                    ],
+
                     // Password Field
                     _buildTextField(
                       controller: _passwordController,
@@ -269,9 +457,9 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
                         return null;
                       },
                     ),
-                    
+
                     const SizedBox(height: 20),
-                    
+
                     // Confirm Password Field
                     _buildTextField(
                       controller: _confirmPasswordController,
@@ -281,7 +469,8 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
                       isPassword: true,
                       obscureText: _obscureConfirmPassword,
                       onToggleVisibility: () {
-                        setState(() => _obscureConfirmPassword = !_obscureConfirmPassword);
+                        setState(() =>
+                            _obscureConfirmPassword = !_obscureConfirmPassword);
                       },
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -293,9 +482,9 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
                         return null;
                       },
                     ),
-                    
+
                     const SizedBox(height: 24),
-                    
+
                     // Terms and Conditions
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -319,7 +508,8 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
                                 TextSpan(
                                   text: 'I agree to the ',
                                   style: theme.textTheme.bodyMedium?.copyWith(
-                                    color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                                    color: theme.colorScheme.onSurface
+                                        .withValues(alpha: 0.7),
                                   ),
                                   children: [
                                     TextSpan(
@@ -345,9 +535,9 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
                         ),
                       ],
                     ),
-                    
+
                     const SizedBox(height: 32),
-                    
+
                     // Register Button
                     SizedBox(
                       width: double.infinity,
@@ -389,9 +579,9 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
                               ),
                       ),
                     ),
-                    
+
                     const SizedBox(height: 32),
-                    
+
                     // Sign In Link
                     Center(
                       child: Row(
@@ -400,7 +590,8 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
                           Text(
                             "Already have an account? ",
                             style: theme.textTheme.bodyMedium?.copyWith(
-                              color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                              color: theme.colorScheme.onSurface
+                                  .withValues(alpha: 0.7),
                             ),
                           ),
                           TextButton(
@@ -423,7 +614,7 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
                         ],
                       ),
                     ),
-                    
+
                     const SizedBox(height: 24),
                   ],
                 ),
@@ -446,7 +637,7 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
     String? Function(String?)? validator,
   }) {
     final theme = Theme.of(context);
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -499,6 +690,386 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
                 color: theme.colorScheme.primary,
                 width: 2,
               ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Profile Picture Section
+  Widget _buildProfilePictureSection() {
+    final theme = Theme.of(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Profile Picture',
+          style: theme.textTheme.labelLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: theme.colorScheme.onSurface,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Center(
+          child: GestureDetector(
+            onTap: _pickProfileImage,
+            child: Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: theme.colorScheme.primary,
+                  width: 2,
+                ),
+                color: theme.colorScheme.primary.withValues(alpha: 0.1),
+              ),
+              child: _profileImage != null
+                  ? ClipOval(
+                      child: Image.file(
+                        _profileImage!,
+                        fit: BoxFit.cover,
+                        width: 120,
+                        height: 120,
+                      ),
+                    )
+                  : Icon(
+                      Icons.add_a_photo,
+                      size: 40,
+                      color: theme.colorScheme.primary,
+                    ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Center(
+          child: Text(
+            'Tap to add photo',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Date of Birth Field
+  Widget _buildDateOfBirthField() {
+    final theme = Theme.of(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Date of Birth *',
+          style: theme.textTheme.labelLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: theme.colorScheme.onSurface,
+          ),
+        ),
+        const SizedBox(height: 8),
+        GestureDetector(
+          onTap: _selectDateOfBirth,
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surface,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: theme.colorScheme.outline.withValues(alpha: 0.3),
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.calendar_today,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  _selectedDateOfBirth != null
+                      ? DateFormat('MMM dd, yyyy').format(_selectedDateOfBirth!)
+                      : 'Select Date of Birth',
+                  style: TextStyle(
+                    color: _selectedDateOfBirth != null
+                        ? theme.colorScheme.onSurface
+                        : theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Gender Selection Field
+  Widget _buildGenderField() {
+    final theme = Theme.of(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Gender',
+          style: theme.textTheme.labelLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: theme.colorScheme.onSurface,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: theme.colorScheme.outline.withValues(alpha: 0.3),
+            ),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: _selectedGender,
+              isExpanded: true,
+              icon: Icon(
+                Icons.keyboard_arrow_down,
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              ),
+              items: const [
+                DropdownMenuItem(value: 'male', child: Text('Male')),
+                DropdownMenuItem(value: 'female', child: Text('Female')),
+                DropdownMenuItem(value: 'other', child: Text('Other')),
+                DropdownMenuItem(
+                    value: 'prefer_not_to_say',
+                    child: Text('Prefer not to say')),
+              ],
+              onChanged: (value) {
+                if (value != null) {
+                  setState(() {
+                    _selectedGender = value;
+                  });
+                }
+              },
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Driver Toggle
+  Widget _buildDriverToggle() {
+    final theme = Theme.of(context);
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.primary.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: theme.colorScheme.primary.withValues(alpha: 0.3),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.drive_eta,
+            color: theme.colorScheme.primary,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'I want to be a driver',
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: theme.colorScheme.onSurface,
+                  ),
+                ),
+                Text(
+                  'Offer rides to other users',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Switch(
+            value: _isDriver,
+            onChanged: (value) {
+              setState(() {
+                _isDriver = value;
+              });
+            },
+            activeColor: theme.colorScheme.primary,
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Preferences Section (for drivers)
+  Widget _buildPreferencesSection() {
+    final theme = Theme.of(context);
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: theme.colorScheme.outline.withValues(alpha: 0.3),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Driver Preferences',
+            style: theme.textTheme.labelLarge?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: theme.colorScheme.onSurface,
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Smoking Toggle
+          _buildPreferenceToggle(
+            icon: Icons.smoking_rooms,
+            title: 'Smoking Allowed',
+            subtitle: 'Allow smoking in your car',
+            value: _smokingAllowed,
+            onChanged: (value) => setState(() => _smokingAllowed = value),
+          ),
+
+          const SizedBox(height: 12),
+
+          // Pets Toggle
+          _buildPreferenceToggle(
+            icon: Icons.pets,
+            title: 'Pets Allowed',
+            subtitle: 'Allow pets in your car',
+            value: _petsAllowed,
+            onChanged: (value) => setState(() => _petsAllowed = value),
+          ),
+
+          const SizedBox(height: 16),
+
+          // Music Preference
+          _buildDropdownPreference(
+            title: 'Music Preference',
+            value: _musicPreference,
+            items: const [
+              DropdownMenuItem(value: 'any', child: Text('Any music')),
+              DropdownMenuItem(value: 'no_music', child: Text('No music')),
+              DropdownMenuItem(value: 'soft', child: Text('Soft music')),
+              DropdownMenuItem(value: 'upbeat', child: Text('Upbeat music')),
+            ],
+            onChanged: (value) => setState(() => _musicPreference = value!),
+          ),
+
+          const SizedBox(height: 16),
+
+          // Conversation Level
+          _buildDropdownPreference(
+            title: 'Conversation Level',
+            value: _conversationLevel,
+            items: const [
+              DropdownMenuItem(value: 'quiet', child: Text('Quiet ride')),
+              DropdownMenuItem(value: 'some_chat', child: Text('Some chat')),
+              DropdownMenuItem(value: 'chatty', child: Text('Chatty')),
+            ],
+            onChanged: (value) => setState(() => _conversationLevel = value!),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPreferenceToggle({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    final theme = Theme.of(context);
+
+    return Row(
+      children: [
+        Icon(icon, color: theme.colorScheme.primary, size: 20),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              Text(
+                subtitle,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Switch(
+          value: value,
+          onChanged: onChanged,
+          activeColor: theme.colorScheme.primary,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDropdownPreference({
+    required String title,
+    required String value,
+    required List<DropdownMenuItem<String>> items,
+    required ValueChanged<String?> onChanged,
+  }) {
+    final theme = Theme.of(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: theme.colorScheme.outline.withValues(alpha: 0.3),
+            ),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: value,
+              isExpanded: true,
+              items: items,
+              onChanged: onChanged,
             ),
           ),
         ),

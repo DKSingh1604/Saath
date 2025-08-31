@@ -23,13 +23,13 @@ const limiter = rateLimit({
 });
 app.use("/api/", limiter);
 
-// CORS configuration
+// CORS configuration - Allow all origins in development
 app.use(
   cors({
     origin:
       process.env.NODE_ENV === "production"
         ? ["https://your-frontend-domain.com"]
-        : ["http://localhost:3000", "http://127.0.0.1:3000"],
+        : true, // Allow all origins in development
     credentials: true,
   })
 );
@@ -62,11 +62,32 @@ app.use("*", (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 const MONGODB_URI =
-  process.env.MONGODB_URI || "mongodb://localhost:27017/commute-together";
+  process.env.MONGODB_URI ||
+  "mongodb://localhost:27017/commute-together";
 
-// Connect to MongoDB
+// Connect to MongoDB with enhanced options
+// Set up Mongoose connection events
+mongoose.connection.on("error", (err) => {
+  console.error("MongoDB connection error:", err);
+});
+
+mongoose.connection.on("connected", () => {
+  console.log("Mongoose connected to MongoDB");
+});
+
+mongoose.connection.on("disconnected", () => {
+  console.log("Mongoose disconnected from MongoDB");
+});
+
 mongoose
-  .connect(MONGODB_URI)
+  .connect(MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    serverSelectionTimeoutMS: 10000, // Timeout for server selection
+    socketTimeoutMS: 45000, // How long sockets stay open for
+    connectTimeoutMS: 20000, // How long to wait for connect
+    maxPoolSize: 10, // Maximum number of connections in the connection pool
+  })
   .then(() => {
     console.log("🚀 Connected to MongoDB");
 
@@ -81,7 +102,7 @@ mongoose
         origin:
           process.env.NODE_ENV === "production"
             ? ["https://your-frontend-domain.com"]
-            : ["http://localhost:3000", "http://127.0.0.1:3000"],
+            : true, // Allow all origins in development
         credentials: true,
       },
     });

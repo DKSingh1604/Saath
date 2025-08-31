@@ -45,7 +45,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 gradient: LinearGradient(
                   colors: [
                     Theme.of(context).colorScheme.primary,
-                    Theme.of(context).colorScheme.primary.withValues(alpha: 0.8),
+                    Theme.of(context)
+                        .colorScheme
+                        .primary
+                        .withValues(alpha: 0.8),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -62,16 +65,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Text(
                     user.name,
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onPrimary,
-                      fontWeight: FontWeight.bold,
-                    ),
+                          color: Theme.of(context).colorScheme.onPrimary,
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     user.email,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.9),
-                    ),
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onPrimary
+                              .withValues(alpha: 0.9),
+                        ),
                   ),
                   const SizedBox(height: 16),
                   Row(
@@ -79,19 +85,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     children: [
                       _buildStatItem(
                         context,
-                        '${user.rating}',
+                        '${user.rating.average.toStringAsFixed(1)}',
                         'Rating',
                         Icons.star,
                       ),
                       _buildStatItem(
                         context,
-                        '${user.totalRides}',
+                        '${user.totalRides.total}',
                         'Rides',
                         Icons.directions_car,
                       ),
                       _buildStatItem(
                         context,
-                        user.isVerified ? 'Yes' : 'No',
+                        user.isVerified.isBasicVerified ? 'Yes' : 'No',
                         'Verified',
                         Icons.verified,
                       ),
@@ -100,42 +106,48 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ],
               ),
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             // Profile details
             _buildInfoSection(
               context,
               'Personal Information',
               [
                 _buildInfoRow(context, Icons.location_city, 'City', user.city),
-                _buildInfoRow(context, Icons.phone, 'Phone', user.phone ?? 'Not provided'),
-                _buildInfoRow(context, Icons.person, 'Role', _getRoleText(user.role)),
+                _buildInfoRow(context, Icons.phone, 'Phone',
+                    user.phone ?? 'Not provided'),
+                _buildInfoRow(
+                    context, Icons.person, 'Role', _getRoleText(user.isDriver)),
               ],
             ),
-            
+
             const SizedBox(height: 20),
-            
+
             // Vehicle information
             if (user.vehicle != null)
               _buildInfoSection(
                 context,
                 'Vehicle Information',
                 [
-                  _buildInfoRow(context, Icons.directions_car, 'Vehicle', user.vehicle!.displayName),
-                  _buildInfoRow(context, Icons.palette, 'Color', user.vehicle!.color),
-                  _buildInfoRow(context, Icons.confirmation_number, 'Plate', user.vehicle!.plateNumber),
-                  _buildInfoRow(context, Icons.event_seat, 'Total Seats', '${user.vehicle!.totalSeats}'),
+                  _buildInfoRow(context, Icons.directions_car, 'Vehicle',
+                      user.vehicle!.displayName),
+                  _buildInfoRow(
+                      context, Icons.palette, 'Color', user.vehicle!.color),
+                  _buildInfoRow(context, Icons.confirmation_number, 'Plate',
+                      user.vehicle!.plateNumber),
+                  _buildInfoRow(context, Icons.event_seat, 'Total Seats',
+                      '${user.vehicle!.totalSeats}'),
                 ],
               ),
-            
+
             const SizedBox(height: 20),
-            
+
             // Action buttons
             _buildActionButtons(context),
-            
+
             const SizedBox(height: 20),
-            
+
             // Recent reviews
             _buildRecentReviews(context),
           ],
@@ -144,13 +156,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildStatItem(BuildContext context, String value, String label, IconData icon) {
+  Widget _buildStatItem(
+      BuildContext context, String value, String label, IconData icon) {
     return Column(
       children: [
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.2),
+            color:
+                Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(
@@ -163,21 +177,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Text(
           value,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            color: Theme.of(context).colorScheme.onPrimary,
-            fontWeight: FontWeight.bold,
-          ),
+                color: Theme.of(context).colorScheme.onPrimary,
+                fontWeight: FontWeight.bold,
+              ),
         ),
         Text(
           label,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.8),
-          ),
+                color: Theme.of(context)
+                    .colorScheme
+                    .onPrimary
+                    .withValues(alpha: 0.8),
+              ),
         ),
       ],
     );
   }
 
-  Widget _buildInfoSection(BuildContext context, String title, List<Widget> children) {
+  Widget _buildInfoSection(
+      BuildContext context, String title, List<Widget> children) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -194,8 +212,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Text(
             title,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+                  fontWeight: FontWeight.w600,
+                ),
           ),
           const SizedBox(height: 16),
           ...children,
@@ -204,7 +222,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildInfoRow(BuildContext context, IconData icon, String label, String value) {
+  Widget _buildInfoRow(
+      BuildContext context, IconData icon, String label, String value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
@@ -222,15 +241,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Text(
                   label,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-                  ),
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withValues(alpha: 0.7),
+                      ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   value,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
+                        fontWeight: FontWeight.w500,
+                      ),
                 ),
               ],
             ),
@@ -277,7 +299,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 onPressed: () {
                   // Help functionality
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Help & Support coming soon!')),
+                    const SnackBar(
+                        content: Text('Help & Support coming soon!')),
                   );
                 },
                 icon: const Icon(Icons.help),
@@ -292,7 +315,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildRecentReviews(BuildContext context) {
     final reviews = SampleData.sampleReviews;
-    
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -309,8 +332,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Text(
             'Recent Reviews',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+                  fontWeight: FontWeight.w600,
+                ),
           ),
           const SizedBox(height: 16),
           ...reviews.take(2).map((review) {
@@ -318,7 +341,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               margin: const EdgeInsets.only(bottom: 16),
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
+                color: Theme.of(context)
+                    .colorScheme
+                    .primaryContainer
+                    .withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
@@ -335,8 +361,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Text(
                         '${review.createdAt.day}/${review.createdAt.month}/${review.createdAt.year}',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                        ),
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurface
+                                  .withValues(alpha: 0.6),
+                            ),
                       ),
                     ],
                   ),
@@ -354,17 +383,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       runSpacing: 4,
                       children: review.tags.map((tag) {
                         return Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.2),
+                            color: Theme.of(context)
+                                .colorScheme
+                                .secondary
+                                .withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
                             tag,
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Theme.of(context).colorScheme.secondary,
-                              fontSize: 10,
-                            ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(
+                                  color:
+                                      Theme.of(context).colorScheme.secondary,
+                                  fontSize: 10,
+                                ),
                           ),
                         );
                       }).toList(),
@@ -388,16 +425,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  String _getRoleText(UserRole role) {
-    switch (role) {
-      case UserRole.driver:
-        return 'Driver';
-      case UserRole.passenger:
-        return 'Passenger';
-      case UserRole.both:
-        return 'Driver & Passenger';
-      default:
-        return 'Unknown';
-    }
+  String _getRoleText(bool isDriver) {
+    return isDriver ? 'Driver' : 'Passenger';
   }
 }

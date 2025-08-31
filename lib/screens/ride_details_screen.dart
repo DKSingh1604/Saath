@@ -37,7 +37,10 @@ class RideDetailsScreen extends StatelessWidget {
                 gradient: LinearGradient(
                   colors: [
                     Theme.of(context).colorScheme.primaryContainer,
-                    Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.7),
+                    Theme.of(context)
+                        .colorScheme
+                        .primaryContainer
+                        .withValues(alpha: 0.7),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -57,15 +60,18 @@ class RideDetailsScreen extends StatelessWidget {
                       children: [
                         Text(
                           driver.name,
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).colorScheme.onPrimaryContainer,
-                          ),
+                          style:
+                              Theme.of(context).textTheme.titleLarge?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onPrimaryContainer,
+                                  ),
                         ),
                         const SizedBox(height: 4),
                         RatingDisplay(
-                          rating: driver.rating,
-                          totalRatings: driver.totalRides,
+                          rating: driver.rating.average,
+                          totalRatings: driver.totalRides.total,
                           size: 16,
                         ),
                         const SizedBox(height: 8),
@@ -74,14 +80,23 @@ class RideDetailsScreen extends StatelessWidget {
                             Icon(
                               Icons.location_city,
                               size: 16,
-                              color: Theme.of(context).colorScheme.onPrimaryContainer.withValues(alpha: 0.7),
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onPrimaryContainer
+                                  .withValues(alpha: 0.7),
                             ),
                             const SizedBox(width: 4),
                             Text(
                               driver.city,
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: Theme.of(context).colorScheme.onPrimaryContainer.withValues(alpha: 0.8),
-                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onPrimaryContainer
+                                        .withValues(alpha: 0.8),
+                                  ),
                             ),
                           ],
                         ),
@@ -91,17 +106,21 @@ class RideDetailsScreen extends StatelessWidget {
                   Column(
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
                         decoration: BoxDecoration(
                           color: Theme.of(context).colorScheme.tertiary,
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
                           '\$${ride.contributionAmount.toInt()}',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: Theme.of(context).colorScheme.onTertiary,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleMedium
+                              ?.copyWith(
+                                color: Theme.of(context).colorScheme.onTertiary,
+                                fontWeight: FontWeight.bold,
+                              ),
                         ),
                       ),
                       if (ride.contributionType == ContributionType.negotiable)
@@ -109,10 +128,13 @@ class RideDetailsScreen extends StatelessWidget {
                           padding: const EdgeInsets.only(top: 4),
                           child: Text(
                             'Negotiable',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Theme.of(context).colorScheme.tertiary,
-                              fontSize: 10,
-                            ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(
+                                  color: Theme.of(context).colorScheme.tertiary,
+                                  fontSize: 10,
+                                ),
                           ),
                         ),
                     ],
@@ -120,7 +142,7 @@ class RideDetailsScreen extends StatelessWidget {
                 ],
               ),
             ),
-            
+
             // Route details
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 20),
@@ -129,7 +151,10 @@ class RideDetailsScreen extends StatelessWidget {
                 color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
+                  color: Theme.of(context)
+                      .colorScheme
+                      .outline
+                      .withValues(alpha: 0.2),
                 ),
               ),
               child: Column(
@@ -138,8 +163,8 @@ class RideDetailsScreen extends StatelessWidget {
                   Text(
                     'Route',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                          fontWeight: FontWeight.w600,
+                        ),
                   ),
                   const SizedBox(height: 16),
                   Row(
@@ -147,7 +172,10 @@ class RideDetailsScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                          color: Theme.of(context)
+                              .colorScheme
+                              .primary
+                              .withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Icon(
@@ -160,19 +188,24 @@ class RideDetailsScreen extends StatelessWidget {
                       Expanded(
                         child: Text(
                           ride.fromLocation,
-                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            fontWeight: FontWeight.w500,
-                          ),
+                          style:
+                              Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                    fontWeight: FontWeight.w500,
+                                  ),
                         ),
                       ),
                     ],
                   ),
                   Container(
-                    margin: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                    margin: const EdgeInsets.symmetric(
+                        vertical: 12, horizontal: 20),
                     height: 30,
                     width: 2,
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .primary
+                          .withValues(alpha: 0.3),
                       borderRadius: BorderRadius.circular(1),
                     ),
                   ),
@@ -181,7 +214,10 @@ class RideDetailsScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.1),
+                          color: Theme.of(context)
+                              .colorScheme
+                              .secondary
+                              .withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Icon(
@@ -194,9 +230,10 @@ class RideDetailsScreen extends StatelessWidget {
                       Expanded(
                         child: Text(
                           ride.toLocation,
-                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            fontWeight: FontWeight.w500,
-                          ),
+                          style:
+                              Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                    fontWeight: FontWeight.w500,
+                                  ),
                         ),
                       ),
                     ],
@@ -204,9 +241,9 @@ class RideDetailsScreen extends StatelessWidget {
                 ],
               ),
             ),
-            
+
             const SizedBox(height: 20),
-            
+
             // Trip details
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 20),
@@ -215,7 +252,10 @@ class RideDetailsScreen extends StatelessWidget {
                 color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
+                  color: Theme.of(context)
+                      .colorScheme
+                      .outline
+                      .withValues(alpha: 0.2),
                 ),
               ),
               child: Column(
@@ -224,8 +264,8 @@ class RideDetailsScreen extends StatelessWidget {
                   Text(
                     'Trip Details',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                          fontWeight: FontWeight.w600,
+                        ),
                   ),
                   const SizedBox(height: 16),
                   _buildDetailRow(
@@ -251,7 +291,7 @@ class RideDetailsScreen extends StatelessWidget {
                 ],
               ),
             ),
-            
+
             // Vehicle details
             if (driver.vehicle != null) ...[
               const SizedBox(height: 20),
@@ -262,7 +302,10 @@ class RideDetailsScreen extends StatelessWidget {
                   color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .outline
+                        .withValues(alpha: 0.2),
                   ),
                 ),
                 child: Column(
@@ -271,8 +314,8 @@ class RideDetailsScreen extends StatelessWidget {
                     Text(
                       'Vehicle Details',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
+                            fontWeight: FontWeight.w600,
+                          ),
                     ),
                     const SizedBox(height: 16),
                     _buildDetailRow(
@@ -299,7 +342,7 @@ class RideDetailsScreen extends StatelessWidget {
                 ),
               ),
             ],
-            
+
             const SizedBox(height: 32),
           ],
         ),
@@ -332,7 +375,8 @@ class RideDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailRow(BuildContext context, IconData icon, String label, String value) {
+  Widget _buildDetailRow(
+      BuildContext context, IconData icon, String label, String value) {
     return Row(
       children: [
         Icon(
@@ -348,15 +392,18 @@ class RideDetailsScreen extends StatelessWidget {
               Text(
                 label,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-                ),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.7),
+                    ),
               ),
               const SizedBox(height: 2),
               Text(
                 value,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w500,
-                ),
+                      fontWeight: FontWeight.w500,
+                    ),
               ),
             ],
           ),

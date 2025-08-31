@@ -9,7 +9,9 @@ class SampleData {
     email: 'alex.johnson@email.com',
     phone: '+1234567890',
     city: 'San Francisco',
-    role: UserRole.both,
+    dateOfBirth: DateTime(1995, 6, 15),
+    gender: 'prefer_not_to_say',
+    isDriver: true,
     vehicle: const Vehicle(
       make: 'Toyota',
       model: 'Camry',
@@ -18,9 +20,22 @@ class SampleData {
       plateNumber: 'ABC123',
       totalSeats: 4,
     ),
-    rating: 4.8,
-    totalRides: 47,
-    isVerified: true,
+    rating: const UserRating(average: 4.8, count: 47),
+    totalRides: const TotalRides(asDriver: 25, asPassenger: 22),
+    preferences: const UserPreferences(
+      smokingAllowed: false,
+      petsAllowed: true,
+      musicPreference: 'soft',
+      conversationLevel: 'some_chat',
+    ),
+    isVerified: const VerificationStatus(
+      email: true,
+      phone: true,
+      identity: true,
+      drivingLicense: false,
+    ),
+    createdAt: DateTime.now().subtract(const Duration(days: 365)),
+    updatedAt: DateTime.now(),
   );
 
   static final List<User> drivers = [
@@ -29,9 +44,12 @@ class SampleData {
       name: 'Sarah Chen',
       email: 'sarah.chen@email.com',
       phone: '+1234567891',
-      photoUrl: 'https://pixabay.com/get/gdde06686b323fd71cff9273c2422cd3bd62a5c09e563da6aeedb9f6bb205102732a99dc4e0e6d87cf24ba16ab1f6973cff08e8b2fd3daa3e335fbd0357a7f9f3_1280.jpg',
+      profilePicture:
+          'https://pixabay.com/get/gdde06686b323fd71cff9273c2422cd3bd62a5c09e563da6aeedb9f6bb205102732a99dc4e0e6d87cf24ba16ab1f6973cff08e8b2fd3daa3e335fbd0357a7f9f3_1280.jpg',
       city: 'San Francisco',
-      role: UserRole.driver,
+      dateOfBirth: DateTime(1992, 3, 10),
+      gender: 'female',
+      isDriver: true,
       vehicle: const Vehicle(
         make: 'Honda',
         model: 'Civic',
@@ -40,18 +58,34 @@ class SampleData {
         plateNumber: 'XYZ789',
         totalSeats: 4,
       ),
-      rating: 4.9,
-      totalRides: 89,
-      isVerified: true,
+      rating: const UserRating(average: 4.9, count: 89),
+      totalRides: const TotalRides(asDriver: 89, asPassenger: 0),
+      preferences: const UserPreferences(
+        smokingAllowed: false,
+        petsAllowed: false,
+        musicPreference: 'soft',
+        conversationLevel: 'some_chat',
+      ),
+      isVerified: const VerificationStatus(
+        email: true,
+        phone: true,
+        identity: true,
+        drivingLicense: true,
+      ),
+      createdAt: DateTime.now().subtract(const Duration(days: 500)),
+      updatedAt: DateTime.now(),
     ),
     User(
       id: 'driver2',
       name: 'Michael Rodriguez',
       email: 'michael.r@email.com',
       phone: '+1234567892',
-      photoUrl: 'https://pixabay.com/get/ga405f1adefc688ffd1e8d124abd97269cfa0b5519baec4e121b7c049610c44747ec3752cd20cbc9632268e4067dfb8322d9682375776a69e3ab5a7e5def4a8bd_1280.jpg',
+      profilePicture:
+          'https://pixabay.com/get/ga405f1adefc688ffd1e8d124abd97269cfa0b5519baec4e121b7c049610c44747ec3752cd20cbc9632268e4067dfb8322d9682375776a69e3ab5a7e5def4a8bd_1280.jpg',
       city: 'San Francisco',
-      role: UserRole.driver,
+      dateOfBirth: DateTime(1988, 8, 22),
+      gender: 'male',
+      isDriver: true,
       vehicle: const Vehicle(
         make: 'Nissan',
         model: 'Altima',
@@ -60,9 +94,22 @@ class SampleData {
         plateNumber: 'DEF456',
         totalSeats: 5,
       ),
-      rating: 4.7,
-      totalRides: 65,
-      isVerified: true,
+      rating: const UserRating(average: 4.7, count: 65),
+      totalRides: const TotalRides(asDriver: 65, asPassenger: 0),
+      preferences: const UserPreferences(
+        smokingAllowed: false,
+        petsAllowed: true,
+        musicPreference: 'upbeat',
+        conversationLevel: 'chatty',
+      ),
+      isVerified: const VerificationStatus(
+        email: true,
+        phone: true,
+        identity: true,
+        drivingLicense: true,
+      ),
+      createdAt: DateTime.now().subtract(const Duration(days: 300)),
+      updatedAt: DateTime.now(),
     ),
     User(
       id: 'driver3',
@@ -70,7 +117,9 @@ class SampleData {
       email: 'emma.t@email.com',
       phone: '+1234567893',
       city: 'San Francisco',
-      role: UserRole.driver,
+      dateOfBirth: DateTime(1996, 12, 5),
+      gender: 'female',
+      isDriver: true,
       vehicle: const Vehicle(
         make: 'Hyundai',
         model: 'Elantra',
@@ -79,9 +128,22 @@ class SampleData {
         plateNumber: 'GHI789',
         totalSeats: 4,
       ),
-      rating: 4.6,
-      totalRides: 42,
-      isVerified: false,
+      rating: const UserRating(average: 4.6, count: 42),
+      totalRides: const TotalRides(asDriver: 42, asPassenger: 0),
+      preferences: const UserPreferences(
+        smokingAllowed: false,
+        petsAllowed: false,
+        musicPreference: 'any',
+        conversationLevel: 'quiet',
+      ),
+      isVerified: const VerificationStatus(
+        email: true,
+        phone: false,
+        identity: false,
+        drivingLicense: false,
+      ),
+      createdAt: DateTime.now().subtract(const Duration(days: 150)),
+      updatedAt: DateTime.now(),
     ),
   ];
 
@@ -162,7 +224,8 @@ class SampleData {
       id: 'msg1',
       rideId: 'ride1',
       senderId: 'driver1',
-      message: 'Hi! I\'ll be driving a white Honda Civic. I\'ll pick you up at Montgomery BART at 8:30 AM sharp.',
+      message:
+          'Hi! I\'ll be driving a white Honda Civic. I\'ll pick you up at Montgomery BART at 8:30 AM sharp.',
       timestamp: DateTime.now().subtract(const Duration(hours: 2)),
     ),
     ChatMessage(
@@ -188,7 +251,8 @@ class SampleData {
       reviewerId: 'user1',
       revieweeId: 'driver1',
       rating: 5,
-      comment: 'Excellent driver! Very punctual and friendly. Car was clean and comfortable.',
+      comment:
+          'Excellent driver! Very punctual and friendly. Car was clean and comfortable.',
       tags: ['Punctual', 'Friendly', 'Clean Car'],
       createdAt: DateTime.now().subtract(const Duration(days: 1)),
     ),
@@ -214,7 +278,9 @@ class SampleData {
   }
 
   static List<RideRequest> getRequestsForRide(String rideId) {
-    return pendingRequests.where((request) => request.rideId == rideId).toList();
+    return pendingRequests
+        .where((request) => request.rideId == rideId)
+        .toList();
   }
 
   static List<ChatMessage> getMessagesForRide(String rideId) {

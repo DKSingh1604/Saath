@@ -19,17 +19,17 @@ class _WelcomeScreenState extends State<WelcomeScreen>
   @override
   void initState() {
     super.initState();
-    
+
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
-    
+
     _slideController = AnimationController(
       duration: const Duration(milliseconds: 1200),
       vsync: this,
     );
-    
+
     _fadeAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
@@ -37,7 +37,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       parent: _fadeController,
       curve: Curves.easeOut,
     ));
-    
+
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, 0.3),
       end: Offset.zero,
@@ -45,7 +45,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       parent: _slideController,
       curve: Curves.easeOutBack,
     ));
-    
+
     // Start animations
     _fadeController.forward();
     Future.delayed(const Duration(milliseconds: 300), () {
@@ -110,36 +110,40 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                           ),
                         ),
                         const SizedBox(height: 32),
-                        
+
                         // App Title
                         Text(
                           'CommuteTogether',
-                          style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 32,
-                          ),
+                          style: Theme.of(context)
+                              .textTheme
+                              .headlineLarge
+                              ?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 32,
+                              ),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 16),
-                        
+
                         // Subtitle
                         Text(
                           'Share rides, save money,\nmake connections',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: Colors.white.withValues(alpha: 0.9),
-                            height: 1.4,
-                          ),
+                          style:
+                              Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    color: Colors.white.withValues(alpha: 0.9),
+                                    height: 1.4,
+                                  ),
                           textAlign: TextAlign.center,
                         ),
                       ],
                     ),
                   ),
                 ),
-                
+
                 // Action Buttons
                 Expanded(
-                  flex: 2,
+                  flex: 3,
                   child: SlideTransition(
                     position: _slideAnimation,
                     child: Column(
@@ -161,7 +165,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                           text: 'Rate and review your trips',
                         ),
                         const SizedBox(height: 40),
-                        
+
                         // Get Started Button
                         SizedBox(
                           width: double.infinity,
@@ -176,7 +180,8 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.white,
-                              foregroundColor: Theme.of(context).colorScheme.primary,
+                              foregroundColor:
+                                  Theme.of(context).colorScheme.primary,
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -185,17 +190,21 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                             ),
                             child: Text(
                               'Get Started',
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
                             ),
                           ),
                         ),
                         const SizedBox(height: 16),
-                        
+
                         // Login Button
                         SizedBox(
                           width: double.infinity,
+                          // height: 30,
                           child: OutlinedButton(
                             onPressed: () {
                               Navigator.push(
@@ -207,7 +216,9 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                             },
                             style: OutlinedButton.styleFrom(
                               foregroundColor: Colors.white,
-                              side: BorderSide(color: Colors.white.withValues(alpha: 0.5)),
+                              side: BorderSide(
+                                color: Colors.white.withValues(alpha: 0.5),
+                              ),
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -215,9 +226,12 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                             ),
                             child: Text(
                               'I already have an account',
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                color: Colors.white.withValues(alpha: 0.9),
-                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(
+                                    color: Colors.white.withValues(alpha: 0.9),
+                                  ),
                             ),
                           ),
                         ),
@@ -266,8 +280,8 @@ class _FeatureItem extends StatelessWidget {
           child: Text(
             text,
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: Colors.white.withValues(alpha: 0.9),
-            ),
+                  color: Colors.white.withValues(alpha: 0.9),
+                ),
           ),
         ),
       ],
