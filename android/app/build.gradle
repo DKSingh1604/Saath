@@ -14,16 +14,18 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = "com.mycompany.CounterApp"
-    compileSdk = flutter.compileSdkVersion
+    // Explicitly set compileSdk to 35 to satisfy newer AndroidX dependencies
+    compileSdk = 35
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8
+        // Align Kotlin jvm target with Java compile options
+        jvmTarget = "11"
     }
 
     signingConfigs {
@@ -38,19 +40,22 @@ android {
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.mycompany.CounterApp"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
+    // You can update the following values to match your application needs.
+    // For more information, see: https://flutter.dev/to/review-gradle-config.
+    minSdk = flutter.minSdkVersion
+    // Target SDK should match compile SDK for compatibility with AndroidX libs
+    targetSdk = 35
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.release
+            // Only apply the release signing config if a key.properties file is present
+            // to avoid a missing storeFile error when building on machines without a release keystore.
+            if (rootProject.file('key.properties').exists()) {
+                signingConfig signingConfigs.release
+            }
         }
     }
 }
