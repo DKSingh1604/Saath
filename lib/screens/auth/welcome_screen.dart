@@ -194,8 +194,8 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                   .textTheme
                                   .titleMedium
                                   ?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.grey),
                             ),
                           ),
                         ),

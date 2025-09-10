@@ -5,7 +5,7 @@ const crypto = require("crypto");
 const { body, validationResult } = require("express-validator");
 const User = require("../models/User");
 const { protect, generateToken } = require("../middleware/auth");
-const nodemailer = require("nodemailer");
+const sendEmail = require("../utils/mailGun");
 
 // Create email transporter
 const createTransporter = () => {
@@ -30,13 +30,8 @@ router.post(
       .trim()
       .isLength({ min: 2, max: 50 })
       .withMessage("Name must be between 2-50 characters"),
-    body("email")
-      .isEmail()
-      .normalizeEmail()
-      .withMessage("Please enter a valid email"),
-    body("phone")
-      .isMobilePhone()
-      .withMessage("Please enter a valid phone number"),
+    body("email").isEmail().normalizeEmail().withMessage("Please enter a valid email"),
+    body("phone").isMobilePhone().withMessage("Please enter a valid phone number"),
     body("password")
       .isLength({ min: 6 })
       .withMessage("Password must be at least 6 characters"),
@@ -87,8 +82,7 @@ router.post(
       if (existingUser) {
         return res.status(400).json({
           success: false,
-          message:
-            "User already exists with this email or phone number",
+          message: "User already exists with this email or phone number",
         });
       }
 
@@ -97,9 +91,7 @@ router.post(
       const hashedPassword = await bcrypt.hash(password, salt);
 
       // Generate email verification OTP
-      const emailOTP = Math.floor(
-        100000 + Math.random() * 900000
-      ).toString();
+      const emailOTP = Math.floor(100000 + Math.random() * 900000).toString();
       const emailOTPExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
       // Create user
@@ -132,11 +124,10 @@ router.post(
 
       const user = await User.create(userData);
 
-      // Send verification email
+      // Send verification email using Mailgun
       try {
-        const transporter = createTransporter();
-        await transporter.sendMail({
-          from: process.env.EMAIL_USER,
+        const sendEmail = require("../utils/mailGun");
+        await sendEmail({
           to: email,
           subject: "Car Pool App - Verify Your Email",
           html: `
@@ -144,7 +135,7 @@ router.post(
           <p>Your email verification code is: <strong>${emailOTP}</strong></p>
           <p>This code will expire in 10 minutes.</p>
           <p>If you didn't create this account, please ignore this email.</p>
-        `,
+          `,
         });
       } catch (emailError) {
         console.error("Email sending failed:", emailError);
@@ -153,14 +144,13 @@ router.post(
 
       res.status(201).json({
         success: true,
-        message:
-          "User registered successfully. Please verify your email.",
+        message: "User registered successfully. Please verify your email.",
         data: {
           id: user._id,
           name: user.name,
           email: user.email,
           phone: user.phone,
-          isEmailVerified: user.isEmailVerified,
+          isEmailVerified: user.isVerified?.email,
         },
       });
     } catch (error) {
@@ -176,13 +166,12 @@ router.post(
 // @desc    Login user
 // @route   POST /api/auth/login
 // @access  Public
+
+//LOGIN API ROUTE
 router.post(
   "/login",
   [
-    body("email")
-      .isEmail()
-      .normalizeEmail()
-      .withMessage("Please enter a valid email"),
+    body("email").isEmail().normalizeEmail().withMessage("Please enter a valid email"),
     body("password").notEmpty().withMessage("Password is required"),
   ],
   async (req, res) => {
@@ -199,10 +188,20 @@ router.post(
 
       const { email, password } = req.body;
 
+      console.log("Login attempt:", { email });
+
       // Find user and include password
       const user = await User.findOne({
         email,
       }).select("+password");
+
+      console.log("User found:", {
+        found: !!user,
+        emailVerified: user?.isVerified?.email,
+        hasPassword: !!user?.password,
+        passwordValue: user?.password,
+        userObject: JSON.stringify(user),
+      });
 
       if (!user) {
         return res.status(401).json({
@@ -212,15 +211,32 @@ router.post(
       }
 
       // Check password
-      const isPasswordCorrect = await bcrypt.compare(
-        password,
-        user.password
-      );
+      console.log("Comparing passwords:", {
+        providedPassword: password,
+        hasStoredPassword: !!user.password,
+      });
+
+      console.log("About to compare passwords:", {
+        inputPassword: password,
+        storedHashedPassword: user.password,
+      });
+
+      const isPasswordCorrect = await bcrypt.compare(password, user.password);
+
+      console.log("Password check result:", { isPasswordCorrect });
 
       if (!isPasswordCorrect) {
         return res.status(401).json({
           success: false,
           message: "Invalid credentials",
+        });
+      }
+
+      // Check if email is verified
+      if (!user.isVerified?.email) {
+        return res.status(401).json({
+          success: false,
+          message: "Please verify your email before logging in",
         });
       }
 
@@ -249,7 +265,7 @@ router.post(
             email: user.email,
             phone: user.phone,
             city: user.city,
-            isEmailVerified: user.isEmailVerified,
+            isEmailVerified: user.isVerified?.email,
             isDriver: user.isDriver,
             profilePicture: user.profilePicture,
             rating: user.rating,
@@ -270,16 +286,13 @@ router.post(
 // @desc    Verify email with OTP
 // @route   POST /api/auth/verify-email
 // @access  Public
+
+//VERIFY API ROUTE
 router.post(
   "/verify-email",
   [
-    body("email")
-      .isEmail()
-      .normalizeEmail()
-      .withMessage("Please enter a valid email"),
-    body("otp")
-      .isLength({ min: 6, max: 6 })
-      .withMessage("OTP must be 6 digits"),
+    body("email").isEmail().normalizeEmail().withMessage("Please enter a valid email"),
+    body("otp").isLength({ min: 6, max: 6 }).withMessage("OTP must be 6 digits"),
   ],
   async (req, res) => {
     try {
@@ -296,8 +309,8 @@ router.post(
 
       const user = await User.findOne({
         email,
-        emailOTP: otp,
-        emailOTPExpires: { $gt: Date.now() },
+        "otp.code": otp,
+        "otp.expiresAt": { $gt: Date.now() },
       });
 
       if (!user) {
@@ -307,10 +320,20 @@ router.post(
         });
       }
 
+      console.log("Found user:", {
+        email,
+        providedOTP: otp,
+        storedOTP: user.otp?.code,
+        expiresAt: user.otp?.expiresAt,
+        now: new Date(),
+      });
+
       // Mark email as verified
-      user.isEmailVerified = true;
-      user.emailOTP = undefined;
-      user.emailOTPExpires = undefined;
+      user.isVerified = {
+        ...user.isVerified,
+        email: true,
+      };
+      user.otp = undefined; // Clear the entire OTP object
       await user.save();
 
       // Generate token
@@ -326,7 +349,7 @@ router.post(
             email: user.email,
             phone: user.phone,
             city: user.city,
-            isEmailVerified: user.isEmailVerified,
+            isEmailVerified: user.isVerified?.email,
             isDriver: user.isDriver,
           },
           token,
@@ -345,14 +368,11 @@ router.post(
 // @desc    Resend OTP
 // @route   POST /api/auth/resend-otp
 // @access  Public
+
+//RESEND OTP ROUTE
 router.post(
   "/resend-otp",
-  [
-    body("email")
-      .isEmail()
-      .normalizeEmail()
-      .withMessage("Please enter a valid email"),
-  ],
+  [body("email").isEmail().normalizeEmail().withMessage("Please enter a valid email")],
   async (req, res) => {
     try {
       const errors = validationResult(req);
@@ -375,7 +395,7 @@ router.post(
         });
       }
 
-      if (user.isEmailVerified) {
+      if (user.isVerified?.email) {
         return res.status(400).json({
           success: false,
           message: "Email is already verified",
@@ -383,9 +403,7 @@ router.post(
       }
 
       // Generate new OTP
-      const emailOTP = Math.floor(
-        100000 + Math.random() * 900000
-      ).toString();
+      const emailOTP = Math.floor(100000 + Math.random() * 900000).toString();
       const emailOTPExpires = new Date(Date.now() + 10 * 60 * 1000);
 
       user.emailOTP = emailOTP;
@@ -430,6 +448,8 @@ router.post(
 // @desc    Get current user
 // @route   GET /api/auth/me
 // @access  Private
+
+//ME ROUTE
 router.get("/me", protect, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
@@ -469,13 +489,7 @@ router.put(
         });
       }
 
-      const allowedUpdates = [
-        "name",
-        "city",
-        "dateOfBirth",
-        "gender",
-        "profilePicture",
-      ];
+      const allowedUpdates = ["name", "city", "dateOfBirth", "gender", "profilePicture"];
       const updates = {};
 
       Object.keys(req.body).forEach((key) => {
@@ -484,11 +498,10 @@ router.put(
         }
       });
 
-      const user = await User.findByIdAndUpdate(
-        req.user.id,
-        updates,
-        { new: true, runValidators: true }
-      );
+      const user = await User.findByIdAndUpdate(req.user.id, updates, {
+        new: true,
+        runValidators: true,
+      });
 
       res.json({
         success: true,
@@ -512,9 +525,7 @@ router.put(
   "/update-password",
   protect,
   [
-    body("currentPassword")
-      .notEmpty()
-      .withMessage("Current password is required"),
+    body("currentPassword").notEmpty().withMessage("Current password is required"),
     body("newPassword")
       .isLength({ min: 6 })
       .withMessage("New password must be at least 6 characters"),
@@ -533,9 +544,7 @@ router.put(
       const { currentPassword, newPassword } = req.body;
 
       // Get user with password
-      const user = await User.findById(req.user.id).select(
-        "+password"
-      );
+      const user = await User.findById(req.user.id).select("+password");
 
       // Check current password
       const isCurrentPasswordCorrect = await bcrypt.compare(
@@ -585,6 +594,32 @@ router.post("/logout", protect, async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Server error during logout",
+    });
+  }
+});
+
+// @desc    Test email sending
+// @route   POST /api/auth/test-email
+// @access  Public
+router.post("/test-email", async (req, res) => {
+  try {
+    const sendEmail = require("../utils/mailGun");
+    await sendEmail({
+      to: "devkaransingh1604@gmail.com",
+      subject: "Test Email from Car Pool App",
+      html: "<h1>Test Email</h1><p>If you received this, email sending is working!</p>",
+    });
+
+    res.json({
+      success: true,
+      message: "Test email sent successfully",
+    });
+  } catch (error) {
+    console.error("Test email failed:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to send test email",
+      error: error.message,
     });
   }
 });
