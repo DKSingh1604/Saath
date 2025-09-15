@@ -3,8 +3,8 @@ import 'package:car_pool_app/models/ride.dart';
 import 'package:car_pool_app/models/user.dart';
 import 'package:car_pool_app/services/sample_data.dart';
 import 'package:car_pool_app/widgets/ride_card.dart';
-import 'package:car_pool_app/screens/ride_details_screen.dart';
-import 'package:car_pool_app/screens/ride_requests_screen.dart';
+import 'package:car_pool_app/screens/rides/ride_details_screen.dart';
+import 'package:car_pool_app/screens/rides/ride_requests_screen.dart';
 
 class MyRidesScreen extends StatefulWidget {
   const MyRidesScreen({super.key});
@@ -13,7 +13,8 @@ class MyRidesScreen extends StatefulWidget {
   State<MyRidesScreen> createState() => _MyRidesScreenState();
 }
 
-class _MyRidesScreenState extends State<MyRidesScreen> with TickerProviderStateMixin {
+class _MyRidesScreenState extends State<MyRidesScreen>
+    with TickerProviderStateMixin {
   late TabController _tabController;
 
   @override
@@ -24,7 +25,8 @@ class _MyRidesScreenState extends State<MyRidesScreen> with TickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
-    final myPostedRides = SampleData.getRidesForDriver(SampleData.currentUser.id);
+    final myPostedRides =
+        SampleData.getRidesForDriver(SampleData.currentUser.id);
     final pendingRequests = SampleData.pendingRequests;
 
     return Scaffold(
@@ -36,7 +38,8 @@ class _MyRidesScreenState extends State<MyRidesScreen> with TickerProviderStateM
           controller: _tabController,
           indicatorColor: Theme.of(context).colorScheme.primary,
           labelColor: Theme.of(context).colorScheme.primary,
-          unselectedLabelColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+          unselectedLabelColor:
+              Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
           tabs: [
             Tab(
               text: 'Posted (${myPostedRides.length})',
@@ -73,21 +76,30 @@ class _MyRidesScreenState extends State<MyRidesScreen> with TickerProviderStateM
             Icon(
               Icons.add_road,
               size: 64,
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
+              color: Theme.of(context)
+                  .colorScheme
+                  .onSurface
+                  .withValues(alpha: 0.4),
             ),
             const SizedBox(height: 16),
             Text(
               'No rides posted yet',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-              ),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.6),
+                  ),
             ),
             const SizedBox(height: 8),
             Text(
               'Share your journey and help others commute',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
-              ),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.5),
+                  ),
             ),
           ],
         ),
@@ -100,7 +112,7 @@ class _MyRidesScreenState extends State<MyRidesScreen> with TickerProviderStateM
       itemBuilder: (context, index) {
         final ride = rides[index];
         final driver = SampleData.getUserById(ride.driverId)!;
-        
+
         return RideCard(
           ride: ride,
           driver: driver,
@@ -130,21 +142,30 @@ class _MyRidesScreenState extends State<MyRidesScreen> with TickerProviderStateM
             Icon(
               Icons.inbox,
               size: 64,
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
+              color: Theme.of(context)
+                  .colorScheme
+                  .onSurface
+                  .withValues(alpha: 0.4),
             ),
             const SizedBox(height: 16),
             Text(
               'No ride requests',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-              ),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.6),
+                  ),
             ),
             const SizedBox(height: 8),
             Text(
               'Requests from passengers will appear here',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
-              ),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.5),
+                  ),
             ),
           ],
         ),
@@ -156,8 +177,9 @@ class _MyRidesScreenState extends State<MyRidesScreen> with TickerProviderStateM
       itemCount: requests.length,
       itemBuilder: (context, index) {
         final request = requests[index];
-        final ride = SampleData.availableRides.firstWhere((r) => r.id == request.rideId);
-        
+        final ride =
+            SampleData.availableRides.firstWhere((r) => r.id == request.rideId);
+
         return Card(
           margin: const EdgeInsets.only(bottom: 16),
           child: InkWell(
@@ -188,7 +210,8 @@ class _MyRidesScreenState extends State<MyRidesScreen> with TickerProviderStateM
                         ),
                         child: Icon(
                           Icons.person_add,
-                          color: Theme.of(context).colorScheme.onPrimaryContainer,
+                          color:
+                              Theme.of(context).colorScheme.onPrimaryContainer,
                           size: 20,
                         ),
                       ),
@@ -199,31 +222,44 @@ class _MyRidesScreenState extends State<MyRidesScreen> with TickerProviderStateM
                           children: [
                             Text(
                               'New ride request',
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
                             ),
                             Text(
                               '${ride.fromLocation} → ${ride.toLocation}',
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface
+                                        .withValues(alpha: 0.7),
+                                  ),
                             ),
                           ],
                         ),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
                           color: Theme.of(context).colorScheme.tertiary,
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
                           '\$${request.offeredAmount.toInt()}',
-                          style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                            color: Theme.of(context).colorScheme.onTertiary,
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: Theme.of(context)
+                              .textTheme
+                              .labelMedium
+                              ?.copyWith(
+                                color: Theme.of(context).colorScheme.onTertiary,
+                                fontWeight: FontWeight.w600,
+                              ),
                         ),
                       ),
                     ],
@@ -269,8 +305,10 @@ class _MyRidesScreenState extends State<MyRidesScreen> with TickerProviderStateM
                             // Handle accept
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: const Text('🎉 Request accepted! Chat opened.'),
-                                backgroundColor: Theme.of(context).colorScheme.secondary,
+                                content: const Text(
+                                    '🎉 Request accepted! Chat opened.'),
+                                backgroundColor:
+                                    Theme.of(context).colorScheme.secondary,
                               ),
                             );
                           },
@@ -295,13 +333,28 @@ class _MyRidesScreenState extends State<MyRidesScreen> with TickerProviderStateM
       itemCount: 3,
       itemBuilder: (context, index) {
         final completedRides = [
-          {'from': 'Downtown SF', 'to': 'Silicon Valley', 'date': 'Nov 15, 2024', 'rating': 5.0},
-          {'from': 'Mission District', 'to': 'Oakland', 'date': 'Nov 12, 2024', 'rating': 4.8},
-          {'from': 'SOMA', 'to': 'San Jose', 'date': 'Nov 10, 2024', 'rating': 4.9},
+          {
+            'from': 'Downtown SF',
+            'to': 'Silicon Valley',
+            'date': 'Nov 15, 2024',
+            'rating': 5.0
+          },
+          {
+            'from': 'Mission District',
+            'to': 'Oakland',
+            'date': 'Nov 12, 2024',
+            'rating': 4.8
+          },
+          {
+            'from': 'SOMA',
+            'to': 'San Jose',
+            'date': 'Nov 10, 2024',
+            'rating': 4.9
+          },
         ];
-        
+
         final ride = completedRides[index];
-        
+
         return Card(
           margin: const EdgeInsets.only(bottom: 16),
           child: Padding(
@@ -319,7 +372,8 @@ class _MyRidesScreenState extends State<MyRidesScreen> with TickerProviderStateM
                       ),
                       child: Icon(
                         Icons.check_circle,
-                        color: Theme.of(context).colorScheme.onSecondaryContainer,
+                        color:
+                            Theme.of(context).colorScheme.onSecondaryContainer,
                         size: 20,
                       ),
                     ),
@@ -330,15 +384,24 @@ class _MyRidesScreenState extends State<MyRidesScreen> with TickerProviderStateM
                         children: [
                           Text(
                             'Completed Ride',
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
                           ),
                           Text(
                             ride['date'] as String,
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-                            ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurface
+                                      .withValues(alpha: 0.7),
+                                ),
                           ),
                         ],
                       ),
@@ -353,9 +416,10 @@ class _MyRidesScreenState extends State<MyRidesScreen> with TickerProviderStateM
                         const SizedBox(width: 4),
                         Text(
                           '${ride['rating']}',
-                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style:
+                              Theme.of(context).textTheme.titleSmall?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
                         ),
                       ],
                     ),
@@ -375,7 +439,10 @@ class _MyRidesScreenState extends State<MyRidesScreen> with TickerProviderStateM
                     Icon(
                       Icons.arrow_forward,
                       size: 16,
-                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.5),
                     ),
                     const SizedBox(width: 16),
                     Icon(

@@ -3,7 +3,7 @@ import 'package:car_pool_app/models/ride.dart';
 import 'package:car_pool_app/models/user.dart';
 import 'package:car_pool_app/widgets/user_avatar.dart';
 import 'package:car_pool_app/widgets/rating_display.dart';
-import 'package:car_pool_app/screens/request_ride_screen.dart';
+import 'package:car_pool_app/screens/rides/request_ride_screen.dart';
 
 class RideDetailsScreen extends StatelessWidget {
   final Ride ride;

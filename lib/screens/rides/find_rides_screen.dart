@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:car_pool_app/models/ride.dart';
-import 'package:car_pool_app/models/user.dart';
 import 'package:car_pool_app/services/sample_data.dart';
 import 'package:car_pool_app/widgets/ride_card.dart';
-import 'package:car_pool_app/screens/ride_details_screen.dart';
+import 'package:car_pool_app/screens/rides/ride_details_screen.dart';
 
 class FindRidesScreen extends StatefulWidget {
   const FindRidesScreen({super.key});
@@ -27,15 +26,19 @@ class _FindRidesScreenState extends State<FindRidesScreen> {
   void _filterRides() {
     setState(() {
       _filteredRides = SampleData.availableRides.where((ride) {
-        bool matchesFrom = _fromController.text.isEmpty || 
-            ride.fromLocation.toLowerCase().contains(_fromController.text.toLowerCase());
-        bool matchesTo = _toController.text.isEmpty || 
-            ride.toLocation.toLowerCase().contains(_toController.text.toLowerCase());
-        bool matchesDate = _selectedDate == null || 
+        bool matchesFrom = _fromController.text.isEmpty ||
+            ride.fromLocation
+                .toLowerCase()
+                .contains(_fromController.text.toLowerCase());
+        bool matchesTo = _toController.text.isEmpty ||
+            ride.toLocation
+                .toLowerCase()
+                .contains(_toController.text.toLowerCase());
+        bool matchesDate = _selectedDate == null ||
             (ride.date.year == _selectedDate!.year &&
-             ride.date.month == _selectedDate!.month &&
-             ride.date.day == _selectedDate!.day);
-        
+                ride.date.month == _selectedDate!.month &&
+                ride.date.day == _selectedDate!.day);
+
         return matchesFrom && matchesTo && matchesDate;
       }).toList();
     });
@@ -92,7 +95,8 @@ class _FindRidesScreenState extends State<FindRidesScreen> {
                             context: context,
                             initialDate: DateTime.now(),
                             firstDate: DateTime.now(),
-                            lastDate: DateTime.now().add(const Duration(days: 30)),
+                            lastDate:
+                                DateTime.now().add(const Duration(days: 30)),
                           );
                           if (date != null) {
                             setState(() {
@@ -103,7 +107,7 @@ class _FindRidesScreenState extends State<FindRidesScreen> {
                         },
                         icon: const Icon(Icons.calendar_today),
                         label: Text(
-                          _selectedDate != null 
+                          _selectedDate != null
                               ? '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}'
                               : 'Select Date',
                         ),
@@ -129,7 +133,10 @@ class _FindRidesScreenState extends State<FindRidesScreen> {
           // Results header
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
+            color: Theme.of(context)
+                .colorScheme
+                .primaryContainer
+                .withValues(alpha: 0.3),
             child: Row(
               children: [
                 Icon(
@@ -141,9 +148,9 @@ class _FindRidesScreenState extends State<FindRidesScreen> {
                 Text(
                   '${_filteredRides.length} rides available',
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    color: Theme.of(context).colorScheme.primary,
-                    fontWeight: FontWeight.w600,
-                  ),
+                        color: Theme.of(context).colorScheme.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
                 ),
               ],
             ),
@@ -158,21 +165,32 @@ class _FindRidesScreenState extends State<FindRidesScreen> {
                         Icon(
                           Icons.search_off,
                           size: 64,
-                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withValues(alpha: 0.4),
                         ),
                         const SizedBox(height: 16),
                         Text(
                           'No rides found',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                          ),
+                          style:
+                              Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface
+                                        .withValues(alpha: 0.6),
+                                  ),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           'Try adjusting your search filters',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
-                          ),
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface
+                                        .withValues(alpha: 0.5),
+                                  ),
                         ),
                       ],
                     ),
@@ -183,7 +201,7 @@ class _FindRidesScreenState extends State<FindRidesScreen> {
                     itemBuilder: (context, index) {
                       final ride = _filteredRides[index];
                       final driver = SampleData.getUserById(ride.driverId)!;
-                      
+
                       return RideCard(
                         ride: ride,
                         driver: driver,

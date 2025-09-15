@@ -45,10 +45,6 @@ router.post(
       .optional()
       .isIn(["male", "female", "other", "prefer_not_to_say"])
       .withMessage("Please select a valid gender"),
-    body("isDriver")
-      .optional()
-      .isBoolean()
-      .withMessage("Driver status must be true or false"),
   ],
   async (req, res) => {
     try {
@@ -62,17 +58,7 @@ router.post(
         });
       }
 
-      const {
-        name,
-        email,
-        phone,
-        password,
-        city,
-        dateOfBirth,
-        gender,
-        isDriver,
-        preferences,
-      } = req.body;
+      const { name, email, phone, password, city, dateOfBirth, gender } = req.body;
 
       // Check if user already exists
       const existingUser = await User.findOne({
@@ -86,20 +72,18 @@ router.post(
         });
       }
 
-      // Hash password
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(password, salt);
+      // Note: password hashing is handled in User model pre-save hook
 
       // Generate email verification OTP
       const emailOTP = Math.floor(100000 + Math.random() * 900000).toString();
       const emailOTPExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
-      // Create user
+      // Create user (store plain password; model will hash it before save)
       const userData = {
         name,
         email,
         phone,
-        password: hashedPassword,
+        password,
         city,
         otp: {
           code: emailOTP,
@@ -114,12 +98,6 @@ router.post(
       }
       if (gender) {
         userData.gender = gender;
-      }
-      if (typeof isDriver === "boolean") {
-        userData.isDriver = isDriver;
-      }
-      if (preferences && typeof preferences === "object") {
-        userData.preferences = preferences;
       }
 
       const user = await User.create(userData);
@@ -176,7 +154,6 @@ router.post(
   ],
   async (req, res) => {
     try {
-      // Check for validation errors
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         return res.status(400).json({
@@ -195,13 +172,13 @@ router.post(
         email,
       }).select("+password");
 
-      console.log("User found:", {
-        found: !!user,
-        emailVerified: user?.isVerified?.email,
-        hasPassword: !!user?.password,
-        passwordValue: user?.password,
-        userObject: JSON.stringify(user),
-      });
+      // console.log("User found:", {
+      //   found: !!user,
+      //   emailVerified: user?.isVerified?.email,
+      //   hasPassword: !!user?.password,
+      //   passwordValue: user?.password,
+      //   userObject: JSON.stringify(user),
+      // });
 
       if (!user) {
         return res.status(401).json({
@@ -210,16 +187,16 @@ router.post(
         });
       }
 
-      // Check password
-      console.log("Comparing passwords:", {
-        providedPassword: password,
-        hasStoredPassword: !!user.password,
-      });
+      // // Check password
+      // console.log("Comparing passwords:", {
+      //   providedPassword: password,
+      //   hasStoredPassword: !!user.password,
+      // });
 
-      console.log("About to compare passwords:", {
-        inputPassword: password,
-        storedHashedPassword: user.password,
-      });
+      // console.log("About to compare passwords:", {
+      //   inputPassword: password,
+      //   storedHashedPassword: user.password,
+      // });
 
       const isPasswordCorrect = await bcrypt.compare(password, user.password);
 
@@ -559,11 +536,8 @@ router.put(
         });
       }
 
-      // Hash new password
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(newPassword, salt);
-
-      user.password = hashedPassword;
+      // Assign new password (model pre-save will hash it)
+      user.password = newPassword;
       await user.save();
 
       res.json({

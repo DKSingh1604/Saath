@@ -47,11 +47,11 @@ const userSchema = new mongoose.Schema(
       type: Date,
     },
     gender: {
-      type: String,
-      enum: ["male", "female", "other", "prefer_not_to_say"],
-      default: "prefer_not_to_say",
-    },
-    rating: {
+    type: String,
+    enum: ["male", "female", "other", "prefer_not_to_say"],
+    default: "prefer_not_to_say",
+  },
+  rating: {
       average: {
         type: Number,
         default: 0,
@@ -73,24 +73,27 @@ const userSchema = new mongoose.Schema(
         default: 0,
       },
     },
-    isVerified: {
-      email: {
-        type: Boolean,
-        default: false,
       },
-      phone: {
-        type: Boolean,
-        default: false,
-      },
-      identity: {
-        type: Boolean,
-        default: false,
-      },
-      drivingLicense: {
-        type: Boolean,
-        default: false,
-      },
+  },
+  },
+  isVerified: {
+    email: {
+      type: Boolean,
+      default: false,
     },
+    phone: {
+      type: Boolean,
+      default: false,
+    },
+    identity: {
+      type: Boolean,
+      default: false,
+    },
+    drivingLicense: {
+      type: Boolean,
+      default: false,
+    },
+  },
     otp: {
       code: String,
       expiresAt: Date,
