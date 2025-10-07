@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
+const cookieParser = require("cookie-parser");
 const path = require("path");
 require("dotenv").config();
 
@@ -10,6 +11,7 @@ const app = express();
 
 // Security middleware
 app.use(helmet());
+app.use(cookieParser()); // Parse cookies
 
 // Rate limiting
 const limiter = rateLimit({
@@ -27,9 +29,7 @@ app.use("/api/", limiter);
 app.use(
   cors({
     origin:
-      process.env.NODE_ENV === "production"
-        ? ["https://your-frontend-domain.com"]
-        : true, // Allow all origins in development
+      process.env.NODE_ENV === "production" ? ["https://your-frontend-domain.com"] : true, // Allow all origins in development
     credentials: true,
   })
 );
@@ -43,6 +43,8 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Routes
 app.use("/api/auth", require("./routes/auth"));
+app.use("/api/driver", require("./routes/userAsDriver"));
+app.use("/api/passenger", require("./routes/userAsPassenger"));
 app.use("/api/users", require("./routes/users"));
 app.use("/api/rides", require("./routes/rides"));
 app.use("/api/bookings", require("./routes/bookings"));
@@ -62,8 +64,7 @@ app.use("*", (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 const MONGODB_URI =
-  process.env.MONGODB_URI ||
-  "mongodb://localhost:27017/commute-together";
+  process.env.MONGODB_URI || "mongodb://localhost:27017/commute-together";
 
 // Connect to MongoDB with enhanced options
 // Set up Mongoose connection events
@@ -91,12 +92,10 @@ mongoose
   .then(() => {
     console.log("🚀 Connected to MongoDB");
 
-    // Start server
     const server = app.listen(PORT, () => {
       console.log(`🌟 Server running on port ${PORT}....`);
     });
 
-    // Socket.IO setup for real-time chat
     const io = require("socket.io")(server, {
       cors: {
         origin:

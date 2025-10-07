@@ -7,41 +7,28 @@ exports.protect = async (req, res, next) => {
     let token;
 
     // Check for token in headers
-    if (
-      req.headers.authorization &&
-      req.headers.authorization.startsWith(
-        "Bearer"
-      )
-    ) {
-      token =
-        req.headers.authorization.split(" ")[1];
+    if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
+      token = req.headers.authorization.split(" ")[1];
     }
 
     if (!token) {
       return res.status(401).json({
         success: false,
-        message:
-          "Access denied. No token provided.",
+        message: "Access denied. No token provided.",
       });
     }
 
     try {
       // Verify token
-      const decoded = jwt.verify(
-        token,
-        process.env.JWT_SECRET
-      );
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
       // Get user from token
-      const user = await User.findById(
-        decoded.id
-      ).select("-password");
+      const user = await User.findById(decoded.id).select("-password");
 
       if (!user) {
         return res.status(401).json({
           success: false,
-          message:
-            "Token is valid but user no longer exists",
+          message: "Token is valid but user no longer exists",
         });
       }
 
@@ -75,8 +62,7 @@ exports.driverOnly = (req, res, next) => {
   if (!req.user.isDriver) {
     return res.status(403).json({
       success: false,
-      message:
-        "Access denied. Driver privileges required.",
+      message: "Access denied. Driver privileges required.",
     });
   }
   next();
@@ -87,8 +73,7 @@ exports.adminOnly = (req, res, next) => {
   if (req.user.role !== "admin") {
     return res.status(403).json({
       success: false,
-      message:
-        "Access denied. Admin privileges required.",
+      message: "Access denied. Admin privileges required.",
     });
   }
   next();
@@ -98,9 +83,7 @@ exports.adminOnly = (req, res, next) => {
 exports.checkOwnership = (model) => {
   return async (req, res, next) => {
     try {
-      const resource = await model.findById(
-        req.params.id
-      );
+      const resource = await model.findById(req.params.id);
 
       if (!resource) {
         return res.status(404).json({
@@ -112,28 +95,24 @@ exports.checkOwnership = (model) => {
       // Check if user owns the resource
       if (
         resource.user &&
-        resource.user.toString() !==
-          req.user.id &&
+        resource.user.toString() !== req.user.id &&
         req.user.role !== "admin"
       ) {
         return res.status(403).json({
           success: false,
-          message:
-            "Access denied. You can only access your own resources.",
+          message: "Access denied. You can only access your own resources.",
         });
       }
 
       // Check if user is the driver (for rides)
       if (
         resource.driver &&
-        resource.driver.toString() !==
-          req.user.id &&
+        resource.driver.toString() !== req.user.id &&
         req.user.role !== "admin"
       ) {
         return res.status(403).json({
           success: false,
-          message:
-            "Access denied. You can only access your own rides.",
+          message: "Access denied. You can only access your own rides.",
         });
       }
 
@@ -143,8 +122,7 @@ exports.checkOwnership = (model) => {
       console.error(error);
       res.status(500).json({
         success: false,
-        message:
-          "Server error while checking ownership",
+        message: "Server error while checking ownership",
       });
     }
   };
@@ -156,37 +134,24 @@ exports.optionalAuth = async (req, res, next) => {
     let token;
 
     // Check for token in headers
-    if (
-      req.headers.authorization &&
-      req.headers.authorization.startsWith(
-        "Bearer"
-      )
-    ) {
-      token =
-        req.headers.authorization.split(" ")[1];
+    if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
+      token = req.headers.authorization.split(" ")[1];
     }
 
     if (token) {
       try {
         // Verify token
-        const decoded = jwt.verify(
-          token,
-          process.env.JWT_SECRET
-        );
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
         // Get user from token
-        const user = await User.findById(
-          decoded.id
-        ).select("-password");
+        const user = await User.findById(decoded.id).select("-password");
 
         if (user && user.isActive) {
           req.user = user;
         }
       } catch (error) {
         // Token is invalid, but we don't fail the request
-        console.log(
-          "Invalid token in optional auth, continuing without user"
-        );
+        console.log("Invalid token in optional auth, continuing without user");
       }
     }
 
@@ -199,11 +164,7 @@ exports.optionalAuth = async (req, res, next) => {
 
 // Generate JWT Token
 exports.generateToken = (id) => {
-  return jwt.sign(
-    { id },
-    process.env.JWT_SECRET,
-    {
-      expiresIn: process.env.JWT_EXPIRE || "7d",
-    }
-  );
+  return jwt.sign({ id }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRE || "7d",
+  });
 };

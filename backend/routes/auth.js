@@ -72,13 +72,13 @@ router.post(
         });
       }
 
-      // Note: password hashing is handled in User model pre-save hook
+      // password hashing in User model pre-save
 
       // Generate email verification OTP
       const emailOTP = Math.floor(100000 + Math.random() * 900000).toString();
       const emailOTPExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
-      // Create user (store plain password; model will hash it before save)
+      // Create user
       const userData = {
         name,
         email,
@@ -144,8 +144,6 @@ router.post(
 // @desc    Login user
 // @route   POST /api/auth/login
 // @access  Public
-
-//LOGIN API ROUTE
 router.post(
   "/login",
   [
@@ -172,31 +170,12 @@ router.post(
         email,
       }).select("+password");
 
-      // console.log("User found:", {
-      //   found: !!user,
-      //   emailVerified: user?.isVerified?.email,
-      //   hasPassword: !!user?.password,
-      //   passwordValue: user?.password,
-      //   userObject: JSON.stringify(user),
-      // });
-
       if (!user) {
         return res.status(401).json({
           success: false,
           message: "Invalid credentials",
         });
       }
-
-      // // Check password
-      // console.log("Comparing passwords:", {
-      //   providedPassword: password,
-      //   hasStoredPassword: !!user.password,
-      // });
-
-      // console.log("About to compare passwords:", {
-      //   inputPassword: password,
-      //   storedHashedPassword: user.password,
-      // });
 
       const isPasswordCorrect = await bcrypt.compare(password, user.password);
 
@@ -225,12 +204,17 @@ router.post(
         });
       }
 
-      // Update last login
       user.lastLogin = new Date();
       await user.save();
 
-      // Generate token
       const token = generateToken(user._id);
+
+      res.cookie("token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      });
 
       res.json({
         success: true,
@@ -247,7 +231,7 @@ router.post(
             profilePicture: user.profilePicture,
             rating: user.rating,
           },
-          token,
+          token, // Still including token in response for flexibility
         },
       });
     } catch (error) {
@@ -263,8 +247,6 @@ router.post(
 // @desc    Verify email with OTP
 // @route   POST /api/auth/verify-email
 // @access  Public
-
-//VERIFY API ROUTE
 router.post(
   "/verify-email",
   [
@@ -345,8 +327,6 @@ router.post(
 // @desc    Resend OTP
 // @route   POST /api/auth/resend-otp
 // @access  Public
-
-//RESEND OTP ROUTE
 router.post(
   "/resend-otp",
   [body("email").isEmail().normalizeEmail().withMessage("Please enter a valid email")],
@@ -425,8 +405,6 @@ router.post(
 // @desc    Get current user
 // @route   GET /api/auth/me
 // @access  Private
-
-//ME ROUTE
 router.get("/me", protect, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
@@ -559,6 +537,14 @@ router.put(
 // @access  Private
 router.post("/logout", protect, async (req, res) => {
   try {
+    // Clear the auth cookie
+    res.cookie("token", "", {
+      httpOnly: true,
+      expires: new Date(0), // Expire immediately
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+    });
+
     res.json({
       success: true,
       message: "Logged out successfully",
