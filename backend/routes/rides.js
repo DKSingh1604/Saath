@@ -4,7 +4,7 @@ const Ride = require("../models/Ride");
 const User = require("../models/User");
 const Chat = require("../models/Chat");
 const { protect, checkOwnership } = require("../middleware/auth");
-const { body } = require("express-validator");
+const { body, validationResult } = require("express-validator");
 
 // @desc    Get all rides with filters
 // @route   GET /api/rides
@@ -21,12 +21,26 @@ router.get("/", protect, async (req, res, next) => {
       limit = 10,
       sortBy = "departureTime",
     } = req.query;
+    
+    // Debug: Log requesting user
+    console.log(`GET /api/rides - User: ${req.user.id}, Name: ${req.user.name || 'unknown'}`);
+    
+    // Debug: Query parameters
+    console.log(`Query params: ${JSON.stringify(req.query)}`);
+    
+    // Normalize pagination params to numbers
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const limitNum = Math.max(1, parseInt(limit, 10) || 10);
 
     const query = {
       status: "active",
       departureTime: { $gte: new Date() },
       driver: { $ne: req.user.id },
     };
+    
+    // Debug: Initial query and current server time
+    console.log(`Initial query: ${JSON.stringify(query)}`);
+    console.log(`Current server time: ${new Date().toISOString()}`);
 
     if (origin) {
       query["origin.city"] = new RegExp(origin, "i");
@@ -37,14 +51,21 @@ router.get("/", protect, async (req, res, next) => {
     }
 
     if (date) {
-      const searchDate = new Date(date);
-      const nextDay = new Date(searchDate);
-      nextDay.setDate(nextDay.getDate() + 1);
+      // Create start date at 00:00:00 of the provided date
+      const start = new Date(date);
+      start.setHours(0, 0, 0, 0);
+      
+      // Create end date as 00:00:00 of the next day
+      const end = new Date(start);
+      end.setDate(end.getDate() + 1);
 
       query.departureTime = {
-        $gte: searchDate,
-        $lt: nextDay,
+        $gte: start,
+        $lt: end,
       };
+      
+      // Debug: Date filter
+      console.log(`Date filter - Start: ${start.toISOString()}, End: ${end.toISOString()}`);
     }
 
     if (seats) {
@@ -55,23 +76,106 @@ router.get("/", protect, async (req, res, next) => {
       query.pricePerSeat = { $lte: parseFloat(maxPrice) };
     }
 
+    // Debug: Final query before execution
+    console.log(`Final query: ${JSON.stringify(query)}`);
+
+    // Debug: Find all rides (without filters) to check what's in DB
+    const allRides = await Ride.find().lean();
+    console.log(`Total rides in DB: ${allRides.length}`);
+    
+    // Log some details about each ride
+    allRides.forEach((ride, i) => {
+      console.log(`Ride ${i+1}: ID=${ride._id}, Driver=${ride.driver}, Status=${ride.status}, Departure=${new Date(ride.departureTime).toISOString()}, AvailableSeats=${ride.availableSeats}`);
+    });
+
     const rides = await Ride.find(query)
       .populate("driver", "name profilePicture rating city vehicle")
       .populate("passengers.user", "name profilePicture")
-      .limit(limit * 1)
-      .skip((page - 1) * limit)
+      .limit(limitNum)
+      .skip((pageNum - 1) * limitNum)
       .sort({ [sortBy]: 1 });
+
+    // Debug: Found rides after filtering
+    console.log(`Rides found after filtering: ${rides.length}`);
 
     const total = await Ride.countDocuments(query);
 
+    
     res.status(200).json({
       success: true,
       data: rides,
       pagination: {
+        page: pageNum,
+        limit: limitNum,
+        total,
+        pages: Math.ceil(total / limitNum),
+      },
+      
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// @desc    Get user's rides (as driver and passenger)
+// @route   GET /api/rides/my/rides
+// @access  Private
+router.get("/my/rides", protect, async (req, res, next) => {
+  try {
+    const { status = "all", type = "all", page = 1, limit = 10 } = req.query;
+
+    // Get rides as driver
+    let driverQuery = { driver: req.user.id };
+    if (status !== "all") {
+      driverQuery.status = status;
+    }
+
+    // Get rides as passenger
+    let passengerQuery = {
+      "passengers.user": req.user.id,
+    };
+    if (status !== "all") {
+      passengerQuery[`passengers.$.status`] = status;
+    }
+
+    let rides = [];
+
+    if (type === "driver" || type === "all") {
+      const driverRides = await Ride.find(driverQuery)
+        .populate("passengers.user", "name profilePicture")
+        .sort({ departureTime: -1 });
+
+      rides.push(
+        ...driverRides.map((ride) => ({ ...ride.toObject(), userRole: "driver" }))
+      );
+    }
+
+    if (type === "passenger" || type === "all") {
+      const passengerRides = await Ride.find(passengerQuery)
+        .populate("driver", "name profilePicture rating vehicle")
+        .sort({ departureTime: -1 });
+
+      rides.push(
+        ...passengerRides.map((ride) => ({ ...ride.toObject(), userRole: "passenger" }))
+      );
+    }
+
+    // Sort by departure time
+    rides.sort((a, b) => new Date(b.departureTime) - new Date(a.departureTime));
+
+    // Pagination
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + parseInt(limit);
+    const paginatedRides = rides.slice(startIndex, endIndex);
+
+    res.status(200).json({
+      success: true,
+      data: paginatedRides,
+      pagination: {
         page: parseInt(page),
         limit: parseInt(limit),
-        total,
-        pages: Math.ceil(total / limit),
+        total: rides.length,
+        pages: Math.ceil(rides.length / limit),
       },
     });
   } catch (error) {
@@ -133,15 +237,47 @@ router.post(
     body("vehicleInfo.plateNumber")
       .notEmpty()
       .withMessage("Vehicle plate number is required"),
+    body("route.distance")
+      .isFloat({ min: 0 })
+      .withMessage("Route distance is required"),
+    body("route.duration")
+      .isInt({ min: 1 })
+      .withMessage("Route duration is required"),
   ],
   async (req, res, next) => {
     try {
-      // Extract vehicle info from request body (per-ride basis)
-      const { vehicleInfo, ...otherData } = req.body;
+      
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          success: false,
+          message: "Validation failed",
+          errors: errors.array(),
+        });
+      }
+      
+      
+      const { vehicleInfo, route, ...otherData } = req.body;
+
+      
+      if (!vehicleInfo) {
+        return res.status(400).json({
+          success: false,
+          message: "vehicleInfo object is required",
+        });
+      }
+      
+      if (!route) {
+        return res.status(400).json({
+          success: false,
+          message: "route object is required",
+        });
+      }
 
       const rideData = {
         ...otherData,
         driver: req.user.id,
+        route: route, 
         vehicleInfo: {
           make: vehicleInfo.make,
           model: vehicleInfo.model,
@@ -184,6 +320,7 @@ router.post(
     }
   }
 );
+
 
 // @desc    Update ride
 // @route   PUT /api/rides/:id
@@ -259,6 +396,16 @@ router.post(
   ],
   async (req, res, next) => {
     try {
+      // Check validation results
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          success: false,
+          message: "Validation failed",
+          errors: errors.array(),
+        });
+      }
+
       const ride = await Ride.findById(req.params.id).populate(
         "driver",
         "name profilePicture"
@@ -279,6 +426,14 @@ router.post(
         return res.status(400).json({
           success: false,
           message: canBook.reason,
+        });
+      }
+      
+      // Extra check to ensure seats requested don't exceed available seats
+      if (seatsBooked > ride.availableSeats) {
+        return res.status(400).json({
+          success: false,
+          message: `Cannot book ${seatsBooked} seats. Only ${ride.availableSeats} seats available.`,
         });
       }
 
@@ -374,72 +529,6 @@ router.delete("/:id/cancel-booking", protect, async (req, res, next) => {
     res.status(200).json({
       success: true,
       message: "Booking cancelled successfully",
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-
-// @desc    Get user's rides (as driver and passenger)
-// @route   GET /api/rides/my-rides
-// @access  Private
-router.get("/my/rides", protect, async (req, res, next) => {
-  try {
-    const { status = "all", type = "all", page = 1, limit = 10 } = req.query;
-
-    // Get rides as driver
-    let driverQuery = { driver: req.user.id };
-    if (status !== "all") {
-      driverQuery.status = status;
-    }
-
-    // Get rides as passenger
-    let passengerQuery = {
-      "passengers.user": req.user.id,
-    };
-    if (status !== "all") {
-      passengerQuery[`passengers.$.status`] = status;
-    }
-
-    let rides = [];
-
-    if (type === "driver" || type === "all") {
-      const driverRides = await Ride.find(driverQuery)
-        .populate("passengers.user", "name profilePicture")
-        .sort({ departureTime: -1 });
-
-      rides.push(
-        ...driverRides.map((ride) => ({ ...ride.toObject(), userRole: "driver" }))
-      );
-    }
-
-    if (type === "passenger" || type === "all") {
-      const passengerRides = await Ride.find(passengerQuery)
-        .populate("driver", "name profilePicture rating vehicle")
-        .sort({ departureTime: -1 });
-
-      rides.push(
-        ...passengerRides.map((ride) => ({ ...ride.toObject(), userRole: "passenger" }))
-      );
-    }
-
-    // Sort by departure time
-    rides.sort((a, b) => new Date(b.departureTime) - new Date(a.departureTime));
-
-    // Pagination
-    const startIndex = (page - 1) * limit;
-    const endIndex = startIndex + parseInt(limit);
-    const paginatedRides = rides.slice(startIndex, endIndex);
-
-    res.status(200).json({
-      success: true,
-      data: paginatedRides,
-      pagination: {
-        page: parseInt(page),
-        limit: parseInt(limit),
-        total: rides.length,
-        pages: Math.ceil(rides.length / limit),
-      },
     });
   } catch (error) {
     next(error);
