@@ -51,10 +51,8 @@ app.use("/api/bookings", require("./routes/bookings"));
 app.use("/api/reviews", require("./routes/reviews"));
 app.use("/api/chat", require("./routes/chat"));
 
-// Error handling middleware
 app.use(require("./middleware/errorHandler"));
 
-// 404 handler
 app.use("*", (req, res) => {
   res.status(404).json({
     success: false,

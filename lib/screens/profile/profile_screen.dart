@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:car_pool_app/services/sample_data.dart';
 import 'package:car_pool_app/widgets/user_avatar.dart';
 import 'package:car_pool_app/widgets/rating_display.dart';
-import 'package:car_pool_app/models/user.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -85,7 +84,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     children: [
                       _buildStatItem(
                         context,
-                        '${user.rating.average.toStringAsFixed(1)}',
+                        user.rating.average.toStringAsFixed(1),
                         'Rating',
                         Icons.star,
                       ),
@@ -410,7 +409,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ],
               ),
             );
-          }).toList(),
+          }),
           TextButton(
             onPressed: () {
               // View all reviews functionality

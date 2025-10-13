@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:car_pool_app/models/ride.dart';
-import 'package:car_pool_app/models/user.dart';
 import 'package:car_pool_app/services/sample_data.dart';
 import 'package:car_pool_app/widgets/ride_card.dart';
 import 'package:car_pool_app/screens/rides/ride_details_screen.dart';

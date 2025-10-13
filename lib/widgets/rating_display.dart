@@ -5,7 +5,6 @@ class RatingDisplay extends StatelessWidget {
   final int totalRatings;
   final double size;
   final bool showCount;
-
   const RatingDisplay({
     super.key,
     required this.rating,
@@ -43,7 +42,7 @@ class RatingDisplay extends StatelessWidget {
         if (showCount) ...[
           const SizedBox(width: 4),
           Text(
-            rating > 0 ? '${rating.toStringAsFixed(1)}' : 'New',
+            rating > 0 ? rating.toStringAsFixed(1) : 'New',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
               fontWeight: FontWeight.w500,
             ),

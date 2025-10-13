@@ -252,7 +252,7 @@ class _RegisterScreenState extends State<RegisterScreen>
       }
     } catch (error) {
       if (mounted) {
-        print("Error caught: " + error.toString());
+        print("Error caught: $error");
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('An error occurred: ${error.toString()}'),
@@ -910,7 +910,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                 _isDriver = value;
               });
             },
-            activeColor: theme.colorScheme.primary,
+            activeThumbColor: theme.colorScheme.primary,
           ),
         ],
       ),
@@ -1030,7 +1030,7 @@ class _RegisterScreenState extends State<RegisterScreen>
         Switch(
           value: value,
           onChanged: onChanged,
-          activeColor: theme.colorScheme.primary,
+          activeThumbColor: theme.colorScheme.primary,
         ),
       ],
     );
