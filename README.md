@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./assets/logos/logo.png" alt="CommuteTogether Logo" width="400"/>
+  <img src="./backend/assets/logos/logo.png" alt="CommuteTogether Logo" width="400"/>
 </div>
 
 
