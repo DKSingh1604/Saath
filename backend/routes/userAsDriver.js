@@ -300,4 +300,156 @@ router.post(
   }
 );
 
+// @desc    Update vehicle information
+// @route   PUT /api/driver/vehicle/:vehicleId
+// @access  Private
+router.put(
+  "/vehicle/:vehicleId",
+  protect,
+  [
+    body("make").optional().notEmpty().withMessage("Vehicle make cannot be empty"),
+    body("model").optional().notEmpty().withMessage("Vehicle model cannot be empty"),
+    body("color").optional().notEmpty().withMessage("Vehicle color cannot be empty"),
+    body("plateNumber").optional().notEmpty().withMessage("Plate number cannot be empty"),
+    body("seats").optional().isInt({ min: 2, max: 8 }).withMessage("Seats must be between 2-8"),
+    body("isDefault").optional().isBoolean(),
+  ],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          success: false,
+          message: "Validation failed",
+          errors: errors.array(),
+        });
+      }
+
+      const user = await User.findById(req.user.id);
+
+      if (!user.driverProfile?.isSetup) {
+        return res.status(400).json({
+          success: false,
+          message: "Driver profile not setup",
+        });
+      }
+
+      const vehicle = user.driverProfile.vehicles.id(req.params.vehicleId);
+
+      if (!vehicle) {
+        return res.status(404).json({
+          success: false,
+          message: "Vehicle not found",
+        });
+      }
+
+      const { make, model, year, color, plateNumber, seats, isDefault } = req.body;
+
+      // Check if plateNumber is being changed and if it already exists
+      if (plateNumber && plateNumber.toUpperCase() !== vehicle.plateNumber) {
+        const existingVehicle = user.driverProfile.vehicles.find(
+          (v) => v.plateNumber === plateNumber.toUpperCase() && v._id.toString() !== req.params.vehicleId
+        );
+
+        if (existingVehicle) {
+          return res.status(400).json({
+            success: false,
+            message: `Vehicle with plate number ${plateNumber.toUpperCase()} already exists`,
+          });
+        }
+      }
+
+      // Update fields if provided
+      if (make) vehicle.make = make;
+      if (model) vehicle.model = model;
+      if (year) vehicle.year = year;
+      if (color) vehicle.color = color;
+      if (plateNumber) vehicle.plateNumber = plateNumber.toUpperCase();
+      if (seats) vehicle.seats = seats;
+
+      // Handle default vehicle
+      if (isDefault !== undefined && isDefault) {
+        user.driverProfile.vehicles.forEach((v) => {
+          v.isDefault = v._id.toString() === req.params.vehicleId;
+        });
+      }
+
+      await user.save();
+
+      res.json({
+        success: true,
+        message: "Vehicle updated successfully",
+        data: {
+          vehicle,
+        },
+      });
+    } catch (error) {
+      console.error("Update vehicle error:", error);
+      res.status(500).json({
+        success: false,
+        message: "Server error",
+      });
+    }
+  }
+);
+
+// @desc    Delete vehicle
+// @route   DELETE /api/driver/vehicle/:vehicleId
+// @access  Private
+router.delete("/vehicle/:vehicleId", protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+
+    if (!user.driverProfile?.isSetup) {
+      return res.status(400).json({
+        success: false,
+        message: "Driver profile not setup",
+      });
+    }
+
+    const vehicle = user.driverProfile.vehicles.id(req.params.vehicleId);
+
+    if (!vehicle) {
+      return res.status(404).json({
+        success: false,
+        message: "Vehicle not found",
+      });
+    }
+
+    // Prevent deletion if it's the only vehicle
+    if (user.driverProfile.vehicles.length === 1) {
+      return res.status(400).json({
+        success: false,
+        message: "Cannot delete the only vehicle. Driver must have at least one vehicle.",
+      });
+    }
+
+    // If deleting default vehicle, set another as default
+    if (vehicle.isDefault) {
+      user.driverProfile.vehicles.forEach((v, index) => {
+        if (v._id.toString() !== req.params.vehicleId && index === 0) {
+          v.isDefault = true;
+        }
+      });
+    }
+
+    vehicle.deleteOne();
+    await user.save();
+
+    res.json({
+      success: true,
+      message: "Vehicle deleted successfully",
+      data: {
+        remainingVehicles: user.driverProfile.vehicles.length,
+      },
+    });
+  } catch (error) {
+    console.error("Delete vehicle error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+});
+
 module.exports = router;

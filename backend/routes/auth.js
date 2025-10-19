@@ -7,19 +7,6 @@ const User = require("../models/User");
 const { protect, generateToken } = require("../middleware/auth");
 const sendEmail = require("../utils/mailGun");
 
-// Create email transporter
-const createTransporter = () => {
-  return nodemailer.createTransporter({
-    host: process.env.EMAIL_HOST,
-    port: process.env.EMAIL_PORT,
-    secure: false,
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  });
-};
-
 // @desc    Register user
 // @route   POST /api/auth/register
 // @access  Public

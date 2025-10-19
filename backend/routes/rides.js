@@ -321,7 +321,6 @@ router.post(
   }
 );
 
-
 // @desc    Update ride
 // @route   PUT /api/rides/:id
 // @access  Private

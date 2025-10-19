@@ -4,11 +4,18 @@ const User = require('../models/User');
 const { protect, optionalAuth } = require('../middleware/auth');
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
+const uploadDir = 'uploads/profiles/';
+
+// Ensure directory exists
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'uploads/profiles/');
+    cb(null, uploadDir);
   },
   filename: function (req, file, cb) {
     cb(null, `${req.user.id}-${Date.now()}${path.extname(file.originalname)}`);
@@ -35,7 +42,6 @@ const upload = multer({
 router.get('/:id', optionalAuth, async (req, res, next) => {
   try {
     const user = await User.findById(req.params.id)
-      .populate('reviews', 'rating comment reviewType createdAt')
       .select('-otp -resetPasswordToken -resetPasswordExpire -fcmToken');
 
     if (!user) {
@@ -83,41 +89,10 @@ router.post('/upload-avatar', protect, upload.single('avatar'), async (req, res,
   }
 });
 
-// @desc    Update vehicle information
-// @route   PUT /api/users/vehicle
-// @access  Private
-router.put('/vehicle', protect, async (req, res, next) => {
-  try {
-    const { make, model, year, color, plateNumber, seats } = req.body;
-
-    const user = await User.findByIdAndUpdate(
-      req.user.id,
-      {
-        isDriver: true,
-        vehicle: {
-          make,
-          model,
-          year,
-          color,
-          plateNumber,
-          seats
-        }
-      },
-      { new: true, runValidators: true }
-    );
-
-    res.status(200).json({
-      success: true,
-      data: user
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-
 // @desc    Get users by city (for finding potential ride partners)
 // @route   GET /api/users/search
 // @access  Private
+//LETS SEE
 router.get('/search', protect, async (req, res, next) => {
   try {
     const { city, isDriver, limit = 10, page = 1 } = req.query;

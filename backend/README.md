@@ -1,3 +1,7 @@
+<div align="center">
+  <img src="./assets/logos/logo.png" alt="CommuteTogether Logo" width="200"/>
+</div>
+
 # CommuteTogether Backend API
 
 A comprehensive Node.js backend API for the CommuteTogether ride-sharing application built with Express.js, MongoDB, and Socket.IO for real-time features.
@@ -205,7 +209,6 @@ A comprehensive Node.js backend API for the CommuteTogether ride-sharing applica
 - `socket.io` - Real-time communication
 - `jsonwebtoken` - JWT authentication
 - `bcryptjs` - Password hashing
-- `nodemailer` - Email service
 - `multer` - File upload handling
 
 ### Security & Validation

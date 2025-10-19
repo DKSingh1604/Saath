@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const mongoose = require('mongoose');
 
 // Middleware to protect routes
 exports.protect = async (req, res, next) => {
@@ -83,12 +84,22 @@ exports.adminOnly = (req, res, next) => {
 exports.checkOwnership = (model) => {
   return async (req, res, next) => {
     try {
-      const resource = await model.findById(req.params.id);
+  
+      
+      if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid ID format",
+        });
+      }
+
+      const Model = require(`../models/${model}`);
+      const resource = await Model.findById(req.params.id);
 
       if (!resource) {
         return res.status(404).json({
           success: false,
-          message: "Resource not found",
+          message: `${model} not found`,
         });
       }
 
