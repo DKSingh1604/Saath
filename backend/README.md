@@ -1,7 +1,3 @@
-<div align="center">
-  <img src="./assets/logos/logo.png" alt="CommuteTogether Logo" width="200"/>
-</div>
-
 # CommuteTogether Backend API
 
 A comprehensive Node.js backend API for the CommuteTogether ride-sharing application built with Express.js, MongoDB, and Socket.IO for real-time features.

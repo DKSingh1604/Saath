@@ -1,4 +1,9 @@
-# Car Pool App - Per-Ride Role System
+<div align="center">
+  <img src="./assets/logos/logo.png" alt="CommuteTogether Logo" width="400"/>
+</div>
+
+
+# Saath - a Community Car Pool App
 
 A modern carpooling application where users choose their role (driver or passenger) for each individual trip, rather than having a fixed role during registration.
 
