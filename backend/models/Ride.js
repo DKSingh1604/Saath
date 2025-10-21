@@ -12,7 +12,7 @@ const rideSchema = new mongoose.Schema({
       required: [true, 'Origin address is required']
     },
     coordinates: {
-      type: [Number], // [longitude, latitude]
+      type: [Number], // [long, lat]
       required: [true, 'Origin coordinates are required']
     },
     city: {
@@ -26,7 +26,7 @@ const rideSchema = new mongoose.Schema({
       required: [true, 'Destination address is required']
     },
     coordinates: {
-      type: [Number], // [longitude, latitude]
+      type: [Number], // [long, lat]
       required: [true, 'Destination coordinates are required']
     },
     city: {
@@ -44,7 +44,11 @@ const rideSchema = new mongoose.Schema({
   availableSeats: {
     type: Number,
     required: [true, 'Available seats is required'],
-    min: [1, 'At least 1 seat must be available'],
+    min: [0, "Available seats cannot be negative"],
+    validate: {
+      validator: Number.isInteger,
+      message: "Available seats must be an integer",
+    },
     max: [7, 'Maximum 7 seats allowed']
   },
   pricePerSeat: {
@@ -54,7 +58,7 @@ const rideSchema = new mongoose.Schema({
   },
   currency: {
     type: String,
-    default: 'USD',
+    default: 'INR',
     enum: ['USD', 'EUR', 'GBP', 'CAD', 'AUD', 'INR', 'JPY']
   },
   route: {

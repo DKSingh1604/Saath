@@ -419,7 +419,6 @@ router.post(
 
       const { seatsBooked, pickupPoint, dropoffPoint } = req.body;
 
-      // Check if user can book this ride
       const canBook = ride.canBook(req.user.id, seatsBooked);
       if (!canBook.canBook) {
         return res.status(400).json({
@@ -428,7 +427,6 @@ router.post(
         });
       }
       
-      // Extra check to ensure seats requested don't exceed available seats
       if (seatsBooked > ride.availableSeats) {
         return res.status(400).json({
           success: false,
@@ -436,10 +434,8 @@ router.post(
         });
       }
 
-      // Calculate total amount
       const totalAmount = ride.pricePerSeat * seatsBooked;
 
-      // Add passenger to ride
       const passengerData = {
         user: req.user.id,
         seatsBooked,
@@ -450,20 +446,21 @@ router.post(
 
       ride.passengers.push(passengerData);
 
-      // Update ride status if full
+      ride.availableSeats -= seatsBooked;
+
+      
       if (ride.isFull()) {
         ride.status = "full";
       }
 
       await ride.save();
 
-      // Add user to chat room
+
       const chat = await Chat.findById(ride.chatRoom);
       if (chat) {
         await chat.addParticipant(req.user.id);
       }
 
-      // Update user's total rides
       await User.findByIdAndUpdate(req.user.id, {
         $inc: { "totalRides.asPassenger": 1 },
       });
