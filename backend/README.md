@@ -1,6 +1,6 @@
-# CommuteTogether Backend API
+# Saath Backend API
 
-A comprehensive Node.js backend API for the CommuteTogether ride-sharing application built with Express.js, MongoDB, and Socket.IO for real-time features.
+A comprehensive Node.js backend API for the Saath ride-sharing application built with Express.js, MongoDB, and Socket.IO for real-time features.
 
 ## 🚀 Features
 
