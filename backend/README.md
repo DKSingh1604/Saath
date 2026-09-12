@@ -301,8 +301,4 @@ MIT License - see LICENSE file for details
 
 ## 📧 Contact
 
-For questions or support, please contact the CommuteTogether team.
-
----
-
-**Built with ❤️ by the CommuteTogether Team**
+For questions or support, please contact @ dev1604karan@gmail.com.
